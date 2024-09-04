@@ -19,6 +19,7 @@ SOURCES += \
     avatamanager.cpp \
     filedownloader.cpp \
     httpclientbase.cpp \
+    liveswapmanager.cpp \
     loginmanager.cpp \
     loginwindow.cpp \
     main.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     avatamanager.h \
     filedownloader.h \
     httpclientbase.h \
+    liveswapmanager.h \
     loginmanager.h \
     loginwindow.h \
     mainwindow.h \

@@ -1,6 +1,8 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "avatamanager.h"
+#include "liveswapmanager.h"
+#include "uiutil.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,6 +32,18 @@ void MainWindow::initCtrls()
     connect(ui->avataListWidget, &QListWidget::itemClicked, [&](QListWidgetItem *item){
             QString avatarId = item->data(Qt::UserRole).toString();
             AvataManager::getInstance()->setCurrentAvata(avatarId);
+            LiveSwapManager::getInstance()->updateAvatar();
+        });
+
+    connect(LiveSwapManager::getInstance(), &LiveSwapManager::createLiveSwapResult, this, &MainWindow::onCreateLiveSwapResult);
+    connect(ui->enableLiveSwapButton, &QPushButton::clicked, [this]() {
+            ui->enableLiveSwapButton->setEnabled(false);
+            LiveSwapManager::getInstance()->createLiveSwap();
+        });
+    connect(ui->stopLiveSwapButton, &QPushButton::clicked, [this]() {
+            ui->enableLiveSwapButton->setEnabled(true);
+            ui->stopLiveSwapButton->setEnabled(false);
+            LiveSwapManager::getInstance()->closeLiveSwap();
         });
 }
 
@@ -56,3 +70,17 @@ void MainWindow::onAvataChanged()
     }
 }
 
+void MainWindow::onCreateLiveSwapResult(bool ok, QString errorMsg)
+{
+    if (ok)
+    {
+        ui->enableLiveSwapButton->setEnabled(false);
+        ui->stopLiveSwapButton->setEnabled(true);
+    }
+    else
+    {
+        ui->enableLiveSwapButton->setEnabled(true);
+        ui->stopLiveSwapButton->setEnabled(false);
+        UiUtil::showTip(errorMsg);
+    }
+}

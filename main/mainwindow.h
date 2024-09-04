@@ -21,6 +21,8 @@ private:
 private slots:
     void onAvataChanged();
 
+    void onCreateLiveSwapResult(bool ok, QString errorMsg);
+
 private:
     Ui::MainWindow *ui;
 };

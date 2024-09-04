@@ -33,7 +33,7 @@ void AvataManager::getAvataFromServer()
     addCommonHeader(request);
 
     QString bearerToken = "Bearer ";
-    bearerToken + LoginManager::getInstance()->getToken();
+    bearerToken += LoginManager::getInstance()->getToken();
     request.setRawHeader("Authorization", bearerToken.toUtf8());
     m_networkAccessManager.get(request);
 }
