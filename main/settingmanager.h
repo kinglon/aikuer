@@ -17,5 +17,7 @@ private:
 public:
     int m_nLogLevel = 2;  // debug
 
-    QString m_serverHost;
+    QString m_loginHost;
+
+    QString m_faceSwapHost;
 };

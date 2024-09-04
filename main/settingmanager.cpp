@@ -33,5 +33,6 @@ void SettingManager::Load()
     QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonData);
     QJsonObject root = jsonDocument.object();
     m_nLogLevel = root["log_level"].toInt();
-    m_serverHost = root["server_host"].toString();
+    m_loginHost = root["login_host"].toString();
+    m_faceSwapHost = root["faceswap_host"].toString();
 }

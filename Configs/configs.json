@@ -1,4 +1,5 @@
 {   
     "log_level":2,
-    "server_host": "https://apitest.akool.com"
+    "login_host": "https://apitest.akool.com",
+    "faceswap_host": "https://faceswaptest.akool.com"
 }

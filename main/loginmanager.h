@@ -3,8 +3,9 @@
 
 #include <QObject>
 #include <QNetworkAccessManager>
+#include "httpclientbase.h"
 
-class LoginManager: public QObject
+class LoginManager: public HttpClientBase
 {
     Q_OBJECT
 
@@ -20,18 +21,13 @@ public:
 
     QString getUserId() { return m_userId; }
 
-private:
-    void addCommonHeader(QNetworkRequest& request);
+protected:
+    virtual void onHttpResponse(QNetworkReply *reply) override;
 
 signals:
     void onLoginResult(bool success, QString errorMessage);
 
-private slots:
-    void onHttpFinished(QNetworkReply *reply);
-
 private:
-    static QNetworkAccessManager *m_networkAccessManager;
-
     QString m_token;
 
     QString m_userId;

@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,12 +9,16 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Utility/DownloadManager.cpp \
     Utility/DumpUtil.cpp \
     Utility/IcrCriticalSection.cpp \
     Utility/ImCharset.cpp \
     Utility/ImPath.cpp \
     Utility/LogBuffer.cpp \
     Utility/LogUtil.cpp \
+    avatamanager.cpp \
+    filedownloader.cpp \
+    httpclientbase.cpp \
     loginmanager.cpp \
     loginwindow.cpp \
     main.cpp \
@@ -23,6 +27,7 @@ SOURCES += \
     uiutil.cpp
 
 HEADERS += \
+    Utility/DownloadManager.h \
     Utility/DumpUtil.h \
     Utility/IcrCriticalSection.h \
     Utility/ImCharset.h \
@@ -30,6 +35,9 @@ HEADERS += \
     Utility/LogBuffer.h \
     Utility/LogMacro.h \
     Utility/LogUtil.h \
+    avatamanager.h \
+    filedownloader.h \
+    httpclientbase.h \
     loginmanager.h \
     loginwindow.h \
     mainwindow.h \

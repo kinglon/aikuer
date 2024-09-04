@@ -5,9 +5,7 @@
 #include <QJsonDocument>
 #include <QNetworkReply>
 
-QNetworkAccessManager *LoginManager::m_networkAccessManager = nullptr;
-
-LoginManager::LoginManager() : QObject(nullptr)
+LoginManager::LoginManager() : HttpClientBase(nullptr)
 {
 
 }
@@ -20,17 +18,8 @@ LoginManager* LoginManager::getInstance()
 
 void LoginManager::login(QString name, QString password)
 {
-    // 初始化网络请求
-    if (m_networkAccessManager == nullptr)
-    {
-        m_networkAccessManager = new QNetworkAccessManager();
-        m_networkAccessManager->setProxy(QNetworkProxy());
-        m_networkAccessManager->setTransferTimeout(10*1000);
-        connect(m_networkAccessManager, &QNetworkAccessManager::finished, this, &LoginManager::onHttpFinished);
-    }
-
     QNetworkRequest request;
-    QUrl url(SettingManager::getInstance()->m_serverHost + "/api/v1/public/login");
+    QUrl url(SettingManager::getInstance()->m_loginHost + "/api/v1/public/login");
     request.setUrl(url);
     addCommonHeader(request);
 
@@ -40,18 +29,10 @@ void LoginManager::login(QString name, QString password)
 
     QJsonDocument jsonDocument(body);
     QByteArray jsonData = jsonDocument.toJson();
-    m_networkAccessManager->post(request, jsonData);
+    m_networkAccessManager.post(request, jsonData);
 }
 
-void LoginManager::addCommonHeader(QNetworkRequest& request)
-{
-    request.setRawHeader("Accept", "application/json, text/plain, */*");
-    request.setRawHeader("Accept-Encoding", "gzip, deflate, br, zstd");
-    request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
-    request.setRawHeader("Content-Type", "application/json");
-}
-
-void LoginManager::onHttpFinished(QNetworkReply *reply)
+void LoginManager::onHttpResponse(QNetworkReply *reply)
 {
     if (reply->error() != QNetworkReply::NoError)
     {
