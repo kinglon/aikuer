@@ -27,6 +27,8 @@ SOURCES += \
     loginwindow.cpp \
     main.cpp \
     mainwindow.cpp \
+    rtmpmanager.cpp \
+    rtmppullthread.cpp \
     settingmanager.cpp \
     uiutil.cpp
 
@@ -49,6 +51,8 @@ HEADERS += \
     loginmanager.h \
     loginwindow.h \
     mainwindow.h \
+    rtmpmanager.h \
+    rtmppullthread.h \
     settingmanager.h \
     uiutil.h
 

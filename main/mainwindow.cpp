@@ -6,6 +6,7 @@
 #include "uiutil.h"
 #include <QTimer>
 #include <QPixmap>
+#include "rtmpmanager.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -49,6 +50,7 @@ void MainWindow::initCtrls()
             LiveSwapManager::getInstance()->closeLiveSwap();
             CameraManager::getInstance()->stopReadCamera();
             CameraManager::getInstance()->startReadCamera();
+            RtmpManager::getInstance()->stopPull();
         });
 
     connect(ui->refreshCameraButton, &QPushButton::clicked, [this]() {
@@ -60,6 +62,10 @@ void MainWindow::initCtrls()
 
     connect(CameraManager::getInstance(), &CameraManager::receiveCameraImage, [this](const QImage* image){
         ui->cameraImage->setPixmap(QPixmap::fromImage(*image));
+    });
+
+    connect(RtmpManager::getInstance(), &RtmpManager::receiveCameraImage, [this](const QImage* image){
+        ui->rtmpImage->setPixmap(QPixmap::fromImage(*image));
     });
 }
 
@@ -94,6 +100,7 @@ void MainWindow::onCreateLiveSwapResult(bool ok, QString errorMsg)
         ui->stopLiveSwapButton->setEnabled(true);
         CameraManager::getInstance()->stopReadCamera();
         CameraManager::getInstance()->startReadCamera();
+        RtmpManager::getInstance()->startPull(LiveSwapManager::getInstance()->getPullUrl());
     }
     else
     {
@@ -124,7 +131,8 @@ void MainWindow::onRefreshCameraBtnClicked()
     CameraManager::getInstance()->startReadCamera();
 }
 
-void MainWindow::closeEvent(QCloseEvent *e)
+void MainWindow::closeEvent(QCloseEvent *)
 {
     CameraManager::getInstance()->stopReadCamera();
+    RtmpManager::getInstance()->stopPull();
 }
