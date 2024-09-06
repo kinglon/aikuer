@@ -2,7 +2,10 @@
 #include "ui_mainwindow.h"
 #include "avatamanager.h"
 #include "liveswapmanager.h"
+#include "cameramanager.h"
 #include "uiutil.h"
+#include <QTimer>
+#include <QPixmap>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -44,7 +47,20 @@ void MainWindow::initCtrls()
             ui->enableLiveSwapButton->setEnabled(true);
             ui->stopLiveSwapButton->setEnabled(false);
             LiveSwapManager::getInstance()->closeLiveSwap();
+            CameraManager::getInstance()->stopReadCamera();
+            CameraManager::getInstance()->startReadCamera();
         });
+
+    connect(ui->refreshCameraButton, &QPushButton::clicked, [this]() {
+            onRefreshCameraBtnClicked();
+        });
+    QTimer::singleShot(100, [this]() {
+        onRefreshCameraBtnClicked();
+    });
+
+    connect(CameraManager::getInstance(), &CameraManager::receiveCameraImage, [this](const QImage* image){
+        ui->cameraImage->setPixmap(QPixmap::fromImage(*image));
+    });
 }
 
 void MainWindow::onAvataChanged()
@@ -76,6 +92,8 @@ void MainWindow::onCreateLiveSwapResult(bool ok, QString errorMsg)
     {
         ui->enableLiveSwapButton->setEnabled(false);
         ui->stopLiveSwapButton->setEnabled(true);
+        CameraManager::getInstance()->stopReadCamera();
+        CameraManager::getInstance()->startReadCamera();
     }
     else
     {
@@ -83,4 +101,30 @@ void MainWindow::onCreateLiveSwapResult(bool ok, QString errorMsg)
         ui->stopLiveSwapButton->setEnabled(false);
         UiUtil::showTip(errorMsg);
     }
+}
+
+
+void MainWindow::onRefreshCameraBtnClicked()
+{
+    ui->cameraComboBox->clear();
+    CameraManager::getInstance()->refreshCameras();
+    auto cameras = CameraManager::getInstance()->getCameras();
+    if (cameras.size() == 0)
+    {
+        return;
+    }
+
+    for (auto camera : cameras)
+    {
+        ui->cameraComboBox->addItem(QString::fromUtf8(camera->long_name), camera);
+    }
+    ui->cameraComboBox->setCurrentIndex(0);
+    CameraManager::getInstance()->setCurrentCamera(cameras[0]);
+    CameraManager::getInstance()->stopReadCamera();
+    CameraManager::getInstance()->startReadCamera();
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    CameraManager::getInstance()->stopReadCamera();
 }

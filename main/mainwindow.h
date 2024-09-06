@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,6 +23,10 @@ private slots:
     void onAvataChanged();
 
     void onCreateLiveSwapResult(bool ok, QString errorMsg);
+
+    void onRefreshCameraBtnClicked();
+
+    void closeEvent(QCloseEvent *e);
 
 private:
     Ui::MainWindow *ui;

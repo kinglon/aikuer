@@ -17,6 +17,9 @@ SOURCES += \
     Utility/LogBuffer.cpp \
     Utility/LogUtil.cpp \
     avatamanager.cpp \
+    cameramanager.cpp \
+    camerareadthread.cpp \
+    ffmpegutil.cpp \
     filedownloader.cpp \
     httpclientbase.cpp \
     liveswapmanager.cpp \
@@ -37,6 +40,9 @@ HEADERS += \
     Utility/LogMacro.h \
     Utility/LogUtil.h \
     avatamanager.h \
+    cameramanager.h \
+    camerareadthread.h \
+    ffmpegutil.h \
     filedownloader.h \
     httpclientbase.h \
     liveswapmanager.h \
@@ -50,7 +56,6 @@ FORMS += \
     loginwindow.ui \
     mainwindow.ui
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+# ffmpeg
+INCLUDEPATH += ../ffmpeg/include
+LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavutil
