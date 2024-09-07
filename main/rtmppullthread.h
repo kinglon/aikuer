@@ -30,7 +30,7 @@ public:
     void setRtmpPullUrl(QString rtmpPullUrl) { m_rtmpPullUrl = rtmpPullUrl; }
 
     // 启用后，需要处理imageArrive信号
-    void setEnableImageArriveSignal() { m_enableImageArriveSignal = true; }
+    void setEnableImageArriveSignal(bool enable) { m_enableImageArriveSignal = enable; }
 
     void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback) { m_rtmpFrameArriveCallback = callback; }
 

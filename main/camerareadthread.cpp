@@ -9,6 +9,20 @@ extern "C" {
 #include <libavutil/time.h>
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
+#include <libavutil/rational.h>
+}
+
+// Custom log callback function
+void custom_log_callback(void* ptr, int level, const char* fmt, va_list vl)
+{
+    // Define the maximum log message length
+    constexpr int MAX_LOG_LENGTH = 1024;
+    char log_message[MAX_LOG_LENGTH];
+
+    // Format the log message
+    static int print_prefix = 1;
+    av_log_format_line(ptr, level, fmt, vl, log_message, MAX_LOG_LENGTH, &print_prefix);
+    qDebug(log_message);
 }
 
 CameraReadThread::CameraReadThread()
@@ -26,10 +40,18 @@ void CameraReadThread::run2()
 {
     // Initialize FFmpeg
     avformat_network_init();
+    // av_log_set_level(AV_LOG_DEBUG); // Set the log level
+    // av_log_set_callback(custom_log_callback); // Set the custom log callback function
 
     // Open the camera
     AVFormatContext* pCameraFormatCtx = avformat_alloc_context();
-    int result = avformat_open_input(&pCameraFormatCtx, nullptr, m_camera, NULL);
+    AVDictionary* options = nullptr;
+    // Set encoder options for zero latency
+    av_dict_set(&options, "preset", "ultrafast", 0);
+    av_dict_set(&options, "tune", "zerolatency", 0);
+    av_dict_set(&options, "crf", "23", 0);
+    int result = avformat_open_input(&pCameraFormatCtx, nullptr, m_camera, &options);
+    av_dict_free(&options);
     if (result != 0)
     {
         qCritical("failed to open camera, error is %d", result);
@@ -99,36 +121,72 @@ void CameraReadThread::run2()
     bool enablePushRtmp = !m_rtmpPushUrl.isEmpty();
     if (enablePushRtmp)
     {
+        // 查找H264编码器
+        const AVCodec *h264Codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+        if (!h264Codec)
+        {
+            qCritical("failed to find h264 encoder");
+            avcodec_free_context(&pDecoderCtx);
+            avformat_close_input(&pCameraFormatCtx);
+            return;
+        }
+
+        // 分配编码器上下文
+        AVCodecContext *h264CodecCtx = avcodec_alloc_context3(h264Codec);
+        if (!h264CodecCtx)
+        {
+            qCritical("failed to create h264 encoder context");
+            avcodec_free_context(&pDecoderCtx);
+            avformat_close_input(&pCameraFormatCtx);
+            return;
+        }
+
+        // 设置编码器参数
+        h264CodecCtx->codec_id = h264Codec->id;
+        h264CodecCtx->bit_rate = 4000000;
+        h264CodecCtx->width = codecPar->width;
+        h264CodecCtx->height = codecPar->height;
+        h264CodecCtx->time_base.num = 1;
+        h264CodecCtx->time_base.den = m_frameCount;
+        h264CodecCtx->gop_size = 10;
+        h264CodecCtx->max_b_frames = 0;             // 不需要B帧
+        h264CodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+
+        // 打开编码器
+        result = avcodec_open2(h264CodecCtx, h264Codec, NULL);
+        if (result < 0)
+        {
+            qCritical("failed to open h264 encoder, error is %d", result);
+            avcodec_free_context(&pDecoderCtx);
+            avformat_close_input(&pCameraFormatCtx);
+            avcodec_free_context(&h264CodecCtx);
+            return;
+        }
+
         result = avformat_alloc_output_context2(&pRtmpFormatCtx, nullptr, "flv", m_rtmpPushUrl.toStdString().c_str());
         if (result < 0)
         {
             qCritical("failed to create flv RTMP context, error is %d", result);
             avcodec_free_context(&pDecoderCtx);
             avformat_close_input(&pCameraFormatCtx);
+            avcodec_free_context(&h264CodecCtx);
             return;
         }
 
         // Add video stream to the RTMP context
-        AVStream* pRtmpVideoStream = avformat_new_stream(pRtmpFormatCtx, NULL);
+        AVStream* pRtmpVideoStream = avformat_new_stream(pRtmpFormatCtx, h264Codec);
         if (!pRtmpVideoStream)
         {
             qCritical("failed to create RTMP video stream");
             avcodec_free_context(&pDecoderCtx);
             avformat_close_input(&pCameraFormatCtx);
+            avcodec_free_context(&h264CodecCtx);
             avformat_free_context(pRtmpFormatCtx);
             return;
         }
 
-        // Copy the codec parameters to the RTMP stream
-        result = avcodec_parameters_copy(pRtmpVideoStream->codecpar, codecPar);
-        if (result < 0)
-        {
-            qCritical("failed to copy codec parameters to RTMP stream, error is %d", result);
-            avcodec_free_context(&pDecoderCtx);
-            avformat_close_input(&pCameraFormatCtx);
-            avformat_free_context(pRtmpFormatCtx);
-            return;
-        }
+        avcodec_parameters_from_context(pRtmpVideoStream->codecpar, h264CodecCtx);
+        pRtmpVideoStream->time_base = h264CodecCtx->time_base;
 
         // Open the RTMP output
         result = avio_open(&pRtmpFormatCtx->pb, m_rtmpPushUrl.toStdString().c_str(), AVIO_FLAG_WRITE);

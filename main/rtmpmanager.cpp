@@ -22,7 +22,7 @@ void RtmpManager::startPull(QString pullUrl)
 
     m_rtmpPullThread = new RtmpPullThread();
     m_rtmpPullThread->setRtmpPullUrl(pullUrl);
-    m_rtmpPullThread->setEnableImageArriveSignal();
+    m_rtmpPullThread->setEnableImageArriveSignal(true);
     m_rtmpPullThread->setRtmpFrameArriveCallback(m_rtmpFrameArriveCallback);
     connect(m_rtmpPullThread, &RtmpPullThread::imageArrive, this, &RtmpManager::imageArrive);
     connect(m_rtmpPullThread, &RtmpPullThread::runFinish, this, &RtmpManager::rtmpPullThreadFinish);
@@ -38,6 +38,11 @@ void RtmpManager::stopPull()
     }
 
     m_rtmpPullThread->setExit();
+    m_rtmpPullThread->setEnableImageArriveSignal(false);
+    m_rtmpPullThread->setRtmpFrameArriveCallback(nullptr);
+    disconnect(m_rtmpPullThread, &RtmpPullThread::imageArrive, this, &RtmpManager::imageArrive);
+    disconnect(m_rtmpPullThread, &RtmpPullThread::runFinish, this, &RtmpManager::rtmpPullThreadFinish);
+
     m_rtmpPullThread = nullptr;
 }
 

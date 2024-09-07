@@ -29,7 +29,10 @@ void RtmpPullThread::run2()
 
     // Open rtmp link
     AVFormatContext* pRtmpFormatCtx = avformat_alloc_context();
-    int result = avformat_open_input(&pRtmpFormatCtx, m_rtmpPullUrl.toStdString().c_str(), NULL, NULL);
+    AVDictionary* options = nullptr;
+    av_dict_set(&options, "timeout", "60000000", 0);
+    int result = avformat_open_input(&pRtmpFormatCtx, m_rtmpPullUrl.toStdString().c_str(), NULL, &options);
+    av_dict_free(&options);
     if (result != 0)
     {
         qCritical("failed to open rtmp video, error is %d", result);
