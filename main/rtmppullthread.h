@@ -10,6 +10,12 @@ extern "C"
     #include "libavdevice/avdevice.h"
 }
 
+class IRtmpFrameArriveCallback
+{
+public:
+    virtual void onRtmpFrameArrive(const AVFrame* frame) = 0;
+};
+
 
 class RtmpPullThread : public QThread
 {
@@ -25,6 +31,8 @@ public:
 
     // 启用后，需要处理imageArrive信号
     void setEnableImageArriveSignal() { m_enableImageArriveSignal = true; }
+
+    void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback) { m_rtmpFrameArriveCallback = callback; }
 
 signals:
     // image需要释放
@@ -44,6 +52,8 @@ private:
     bool m_enableImageArriveSignal = false;
 
     QString m_rtmpPullUrl;
+
+    IRtmpFrameArriveCallback* m_rtmpFrameArriveCallback = nullptr;
 };
 
 #endif // RTMPPULLTHREAD_H

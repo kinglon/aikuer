@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QPixmap>
 #include "rtmpmanager.h"
+#include "virtualcameramanager.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -67,6 +68,10 @@ void MainWindow::initCtrls()
     connect(RtmpManager::getInstance(), &RtmpManager::receiveCameraImage, [this](const QImage* image){
         ui->rtmpImage->setPixmap(QPixmap::fromImage(*image));
     });
+
+    connect(ui->enableVCameraCheckBox, &QPushButton::clicked, [this]() {
+            VirtualCameraManager::getInstance()->enableVirtualCamera(ui->enableVCameraCheckBox->isChecked());
+        });
 }
 
 void MainWindow::onAvataChanged()

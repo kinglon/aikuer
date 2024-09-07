@@ -114,7 +114,12 @@ void RtmpPullThread::run2()
         avcodec_send_packet(pDecoderCtx, pPacket);
         result = avcodec_receive_frame(pDecoderCtx, pFrame);
         if (result == 0)
-        {           
+        {
+            if (m_rtmpFrameArriveCallback)
+            {
+                m_rtmpFrameArriveCallback->onRtmpFrameArrive(pFrame);
+            }
+
             if (m_enableImageArriveSignal)
             {
                 emit imageArrive(FfmpegUtil::convertToQImage(pFrame));

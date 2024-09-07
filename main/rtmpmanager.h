@@ -17,6 +17,8 @@ public:
 
     void stopPull();
 
+    void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback) { m_rtmpFrameArriveCallback = callback; }
+
 signals:
     void receiveCameraImage(const QImage* image);
 
@@ -27,6 +29,8 @@ private slots:
 
 private:
     RtmpPullThread* m_rtmpPullThread = nullptr;
+
+    IRtmpFrameArriveCallback* m_rtmpFrameArriveCallback = nullptr;
 };
 
 #endif // RTMPMANAGER_H

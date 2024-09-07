@@ -15,7 +15,7 @@ private:
 	void Load();
 
 public:
-    int m_nLogLevel = 2;  // debug
+    int m_nLogLevel = 2;  // info
 
     QString m_loginHost;
 

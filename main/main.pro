@@ -30,7 +30,8 @@ SOURCES += \
     rtmpmanager.cpp \
     rtmppullthread.cpp \
     settingmanager.cpp \
-    uiutil.cpp
+    uiutil.cpp \
+    virtualcameramanager.cpp
 
 HEADERS += \
     Utility/DownloadManager.h \
@@ -54,7 +55,8 @@ HEADERS += \
     rtmpmanager.h \
     rtmppullthread.h \
     settingmanager.h \
-    uiutil.h
+    uiutil.h \
+    virtualcameramanager.h
 
 FORMS += \
     loginwindow.ui \
@@ -63,3 +65,8 @@ FORMS += \
 # ffmpeg
 INCLUDEPATH += ../ffmpeg/include
 LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavutil
+
+# vcam
+INCLUDEPATH += ../vcam/include
+LIBS += -L"$$_PRO_FILE_PWD_/../vcam/lib" -ljericcam
+
