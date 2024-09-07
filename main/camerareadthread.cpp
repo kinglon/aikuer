@@ -1,5 +1,6 @@
 ﻿#include "camerareadthread.h"
 #include "ffmpegutil.h"
+#include <Windows.h>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -118,6 +119,7 @@ void CameraReadThread::run2()
     }
 
     AVFormatContext* pRtmpFormatCtx = nullptr;
+    AVCodecContext *h264CodecCtx = nullptr;
     bool enablePushRtmp = !m_rtmpPushUrl.isEmpty();
     if (enablePushRtmp)
     {
@@ -132,7 +134,7 @@ void CameraReadThread::run2()
         }
 
         // 分配编码器上下文
-        AVCodecContext *h264CodecCtx = avcodec_alloc_context3(h264Codec);
+        h264CodecCtx = avcodec_alloc_context3(h264Codec);
         if (!h264CodecCtx)
         {
             qCritical("failed to create h264 encoder context");
@@ -142,14 +144,14 @@ void CameraReadThread::run2()
         }
 
         // 设置编码器参数
-        h264CodecCtx->codec_id = h264Codec->id;
+        h264CodecCtx->codec_id = AV_CODEC_ID_H264;
         h264CodecCtx->bit_rate = 4000000;
         h264CodecCtx->width = codecPar->width;
         h264CodecCtx->height = codecPar->height;
-        h264CodecCtx->time_base.num = 1;
-        h264CodecCtx->time_base.den = m_frameCount;
+        h264CodecCtx->time_base = {1, 30};
+        h264CodecCtx->framerate = {30, 1};
         h264CodecCtx->gop_size = 10;
-        h264CodecCtx->max_b_frames = 0;             // 不需要B帧
+        h264CodecCtx->max_b_frames = 1;
         h264CodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
         // 打开编码器
@@ -186,7 +188,6 @@ void CameraReadThread::run2()
         }
 
         avcodec_parameters_from_context(pRtmpVideoStream->codecpar, h264CodecCtx);
-        pRtmpVideoStream->time_base = h264CodecCtx->time_base;
 
         // Open the RTMP output
         result = avio_open(&pRtmpFormatCtx->pb, m_rtmpPushUrl.toStdString().c_str(), AVIO_FLAG_WRITE);
@@ -195,6 +196,7 @@ void CameraReadThread::run2()
             qCritical("failed to open RTMP output, error is %d", result);
             avcodec_free_context(&pDecoderCtx);
             avformat_close_input(&pCameraFormatCtx);
+            avcodec_free_context(&h264CodecCtx);
             avformat_free_context(pRtmpFormatCtx);
             return;
         }
@@ -206,22 +208,27 @@ void CameraReadThread::run2()
             qCritical("failed to write header to RTMP output, error is %d", result);
             avcodec_free_context(&pDecoderCtx);
             avformat_close_input(&pCameraFormatCtx);
-            avio_close(pRtmpFormatCtx->pb);
+            avcodec_free_context(&h264CodecCtx);
             avformat_free_context(pRtmpFormatCtx);
             return;
         }
     }
 
-    // Allocate the frame and packet
-    AVFrame* pFrame = av_frame_alloc();
-    AVPacket* pPacket = av_packet_alloc();
-
     // Main loop for capturing and streaming
-    bool needPushRtmp = true;
+    AVPacket avPacket;
+    int64_t lastTime = 0;
+    const int durationPerTime = 1000 / m_frameCount;
     while (!m_exit)
     {
+        int64_t elapse = GetTickCount64() - lastTime;
+        if (elapse < durationPerTime)
+        {
+            QThread::msleep(durationPerTime - elapse);
+        }
+        lastTime = GetTickCount64();
+
         // Read the frame from the camera
-        result = av_read_frame(pCameraFormatCtx, pPacket);
+        result = av_read_frame(pCameraFormatCtx, &avPacket);
         if (result < 0)
         {
             qCritical("failed to read frame from camera");
@@ -229,40 +236,54 @@ void CameraReadThread::run2()
         }
 
         // Decode the frame
-        avcodec_send_packet(pDecoderCtx, pPacket);
-        result = avcodec_receive_frame(pDecoderCtx, pFrame);
-        if (result == 0)
+        avcodec_send_packet(pDecoderCtx, &avPacket);
+        AVFrame* avFrame = av_frame_alloc();
+        result = avcodec_receive_frame(pDecoderCtx, avFrame);
+        if (result < 0)
         {
-            // Encode and send the frame to the RTMP server
-            if (needPushRtmp && pRtmpFormatCtx && av_interleaved_write_frame(pRtmpFormatCtx, pPacket) < 0) {
-                qCritical("failed to write frame to RTMP output");
-                needPushRtmp = false;
-            }
+            qCritical("failed to decode frame from camera");
+            av_packet_unref(&avPacket);
+            av_frame_free(&avFrame);
+            break;
+        }
 
-            if (m_enableImageArriveSignal)
+        if (m_enableImageArriveSignal)
+        {
+            emit imageArrive(FfmpegUtil::convertToQImage(avFrame));
+        }
+
+        if (enablePushRtmp)
+        {
+            // h264 encode
+            avcodec_send_frame(h264CodecCtx, avFrame);
+            result = avcodec_receive_packet(h264CodecCtx, &avPacket);
+            if (result >= 0)
             {
-                emit imageArrive(FfmpegUtil::convertToQImage(pFrame));
+                av_interleaved_write_frame(pRtmpFormatCtx, &avPacket);
             }
-
-            // Free the frame
-            av_frame_unref(pFrame);
+            else
+            {
+                if (result != AVERROR(EAGAIN))
+                {
+                    qCritical("failed to do the h264 encode, error is %d", result);
+                    av_packet_unref(&avPacket);
+                    av_frame_free(&avFrame);
+                    break;
+                }
+            }
         }
 
         // Free the packet
-        av_packet_unref(pPacket);
-
-        // Sleep to control the frame rate
-        QThread::msleep(1000/m_frameCount);
+        av_packet_unref(&avPacket);
+        av_frame_free(&avFrame);
     }
 
-    // Clean up
-    av_packet_free(&pPacket);
-    av_frame_free(&pFrame);
+    // Clean up    
     avcodec_free_context(&pDecoderCtx);
     avformat_close_input(&pCameraFormatCtx);
     if (enablePushRtmp)
     {
-        avio_close(pRtmpFormatCtx->pb);
+        avcodec_free_context(&h264CodecCtx);
         avformat_free_context(pRtmpFormatCtx);
     }
 }
