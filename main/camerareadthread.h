@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QObject>
 #include <QImage>
+#include <QMutex>
 
 extern "C"
 {
@@ -17,6 +18,7 @@ class CameraReadThread : public QThread
 
 public:
     CameraReadThread();
+    ~CameraReadThread();
 
 public:
     void setExit() { m_exit = true; }
@@ -27,13 +29,12 @@ public:
 
     void setFrameCount(int frameCount) { m_frameCount = frameCount; }
 
-    // 启用后，需要处理imageArrive信号
-    void setEnableImageArriveSignal() { m_enableImageArriveSignal = true; }
+    void enableGenerateQImage() { m_enableGenerateQImage = true; }
+
+    // 用完要释放
+    QImage* popImage();
 
 signals:
-    // image需要释放
-    void imageArrive(QImage* image);
-
     void runFinish();
 
 protected:
@@ -45,13 +46,17 @@ private:
 private:
     bool m_exit = false;
 
-    bool m_enableImageArriveSignal = false;
+    bool m_enableGenerateQImage = false;
 
     const AVInputFormat* m_camera = nullptr;
 
     QString m_rtmpPushUrl;
 
     int m_frameCount = 30;
+
+    QImage* m_lastImage = nullptr;
+
+    QMutex m_mutex;
 };
 
 #endif // CAMERAREADTHREAD_H

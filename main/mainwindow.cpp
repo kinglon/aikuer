@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
 
-    initCtrls();
+    initWindow();
 }
 
 MainWindow::~MainWindow()
@@ -26,7 +26,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::initCtrls()
+void MainWindow::initWindow()
 {
     connect(AvataManager::getInstance(), &AvataManager::avataChanged, this, &MainWindow::onAvataChanged);
     AvataManager::getInstance()->getAvataFromServer();
@@ -61,12 +61,13 @@ void MainWindow::initCtrls()
         onRefreshCameraBtnClicked();
     });
 
-    connect(CameraManager::getInstance(), &CameraManager::receiveCameraImage, [this](const QImage* image){
-        ui->cameraImage->setPixmap(QPixmap::fromImage(*image));
-    });
+    QTimer* updateImageTimer = new QTimer(this);
+    updateImageTimer->setInterval(20);
+    connect(updateImageTimer, &QTimer::timeout, this, &MainWindow::onUpdateImage);
+    updateImageTimer->start();
 
     connect(RtmpManager::getInstance(), &RtmpManager::receiveCameraImage, [this](const QImage* image){
-        ui->rtmpImage->setPixmap(QPixmap::fromImage(*image));
+        UiUtil::showImage(QPixmap::fromImage(*image), *ui->rtmpImage);
     });
 
     connect(ui->enableVCameraCheckBox, &QPushButton::clicked, [this]() {
@@ -105,7 +106,7 @@ void MainWindow::onCreateLiveSwapResult(bool ok, QString errorMsg)
         ui->stopLiveSwapButton->setEnabled(true);
         CameraManager::getInstance()->stopReadCamera();
         CameraManager::getInstance()->startReadCamera();
-        RtmpManager::getInstance()->startPull(LiveSwapManager::getInstance()->getPullUrl());
+        RtmpManager::getInstance()->startPull(LiveSwapManager::getInstance()->getPushUrl());
     }
     else
     {
@@ -140,4 +141,14 @@ void MainWindow::closeEvent(QCloseEvent *)
 {
     CameraManager::getInstance()->stopReadCamera();
     RtmpManager::getInstance()->stopPull();
+}
+
+void MainWindow::onUpdateImage()
+{
+    QImage* cameraImage = CameraManager::getInstance()->getCameraImage();
+    if (cameraImage)
+    {
+        UiUtil::showImage(QPixmap::fromImage(*cameraImage), *ui->cameraImage);
+        delete cameraImage;
+    }
 }

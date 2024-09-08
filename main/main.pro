@@ -64,7 +64,7 @@ FORMS += \
 
 # ffmpeg
 INCLUDEPATH += ../ffmpeg/include
-LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavutil
+LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavutil -lswscale
 
 # vcam
 INCLUDEPATH += ../vcam/include

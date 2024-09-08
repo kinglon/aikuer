@@ -77,6 +77,16 @@ void CameraManager::stopReadCamera()
     m_cameraReadThread->setExit();
 }
 
+QImage* CameraManager::getCameraImage()
+{
+    if (m_cameraReadThread == nullptr || m_cameraReadThreadStopping)
+    {
+        return nullptr;
+    }
+
+    return m_cameraReadThread->popImage();
+}
+
 bool CameraManager::startReadCameraDirectly()
 {
     if (m_currentCamera == nullptr)
@@ -88,18 +98,11 @@ bool CameraManager::startReadCameraDirectly()
     m_cameraReadThread = new CameraReadThread();
     m_cameraReadThread->setCamera(m_currentCamera);
     m_cameraReadThread->setRtmpPushUrl(LiveSwapManager::getInstance()->getPushUrl());
-    m_cameraReadThread->setEnableImageArriveSignal();
-    connect(m_cameraReadThread, &CameraReadThread::imageArrive, this, &CameraManager::imageArrive);
+    m_cameraReadThread->enableGenerateQImage();
     connect(m_cameraReadThread, &CameraReadThread::runFinish, this, &CameraManager::cameraReadThreadFinish);
     connect(m_cameraReadThread, &CameraReadThread::finished, m_cameraReadThread, &QObject::deleteLater);
     m_cameraReadThread->start();
     return true;
-}
-
-void CameraManager::imageArrive(QImage* image)
-{
-    emit receiveCameraImage(image);
-    delete image;
 }
 
 void CameraManager::cameraReadThreadFinish()

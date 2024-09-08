@@ -17,7 +17,7 @@ public:
     ~MainWindow();
 
 private:
-    void initCtrls();
+    void initWindow();
 
 private slots:
     void onAvataChanged();
@@ -27,6 +27,8 @@ private slots:
     void onRefreshCameraBtnClicked();
 
     void closeEvent(QCloseEvent *e);
+
+    void onUpdateImage();
 
 private:
     Ui::MainWindow *ui;

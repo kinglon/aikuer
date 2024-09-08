@@ -31,6 +31,14 @@ CameraReadThread::CameraReadThread()
 
 }
 
+CameraReadThread::~CameraReadThread()
+{
+    if (m_lastImage)
+    {
+        delete m_lastImage;
+    }
+}
+
 void CameraReadThread::run()
 {
     run2();
@@ -247,9 +255,16 @@ void CameraReadThread::run2()
             break;
         }
 
-        if (m_enableImageArriveSignal)
+        if (m_enableGenerateQImage)
         {
-            emit imageArrive(FfmpegUtil::convertToQImage(avFrame));
+            QImage* image = FfmpegUtil::convertToQImage(avFrame);
+            m_mutex.lock();
+            if (m_lastImage)
+            {
+                delete m_lastImage;
+            }
+            m_lastImage = image;
+            m_mutex.unlock();
         }
 
         if (enablePushRtmp)
@@ -286,4 +301,14 @@ void CameraReadThread::run2()
         avcodec_free_context(&h264CodecCtx);
         avformat_free_context(pRtmpFormatCtx);
     }
+}
+
+QImage* CameraReadThread::popImage()
+{
+    QImage* image = nullptr;
+    m_mutex.lock();
+    image = m_lastImage;
+    m_lastImage = nullptr;
+    m_mutex.unlock();
+    return image;
 }

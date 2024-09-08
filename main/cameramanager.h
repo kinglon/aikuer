@@ -29,6 +29,9 @@ public:
 
     void stopReadCamera();
 
+    // 用完要释放
+    QImage* getCameraImage();
+
 private:
     // 直接启动读摄像头，无需等待退出
     bool startReadCameraDirectly();
@@ -36,11 +39,7 @@ private:
 signals:
     void startReadCameraResult(bool ok);
 
-    void receiveCameraImage(const QImage* image);
-
 private slots:
-    void imageArrive(QImage* image);
-
     void cameraReadThreadFinish();
 
 private:

@@ -30,7 +30,8 @@ void RtmpPullThread::run2()
     // Open rtmp link
     AVFormatContext* pRtmpFormatCtx = avformat_alloc_context();
     AVDictionary* options = nullptr;
-    av_dict_set(&options, "timeout", "60000000", 0);
+    av_dict_set(&options, "stimeout", "60000000", 0);
+    av_dict_set(&options, "rtmp_live", "live", 0);
     int result = avformat_open_input(&pRtmpFormatCtx, m_rtmpPullUrl.toStdString().c_str(), NULL, &options);
     av_dict_free(&options);
     if (result != 0)
@@ -96,49 +97,52 @@ void RtmpPullThread::run2()
         avcodec_free_context(&pDecoderCtx);
         avformat_close_input(&pRtmpFormatCtx);
         return;
-    }
+    }    
 
-    // Allocate the frame and packet
-    AVFrame* pFrame = av_frame_alloc();
-    AVPacket* pPacket = av_packet_alloc();
-
-    // Main loop for capturing and streaming   
+    // Main loop for capturing and streaming
+    AVPacket avPacket;
     while (!m_exit)
     {
         // Read the frame from the camera
-        result = av_read_frame(pRtmpFormatCtx, pPacket);
+        result = av_read_frame(pRtmpFormatCtx, &avPacket);
         if (result < 0)
         {
-            qCritical("failed to read frame from rtmp");
+            qCritical("failed to read frame from rtmp, error is %d", result);
             break;
         }
 
         // Decode the frame
-        avcodec_send_packet(pDecoderCtx, pPacket);
-        result = avcodec_receive_frame(pDecoderCtx, pFrame);
+        avcodec_send_packet(pDecoderCtx, &avPacket);
+        AVFrame* avFrame = av_frame_alloc();
+        result = avcodec_receive_frame(pDecoderCtx, avFrame);
         if (result == 0)
         {
             if (m_rtmpFrameArriveCallback)
             {
-                m_rtmpFrameArriveCallback->onRtmpFrameArrive(pFrame);
+                m_rtmpFrameArriveCallback->onRtmpFrameArrive(avFrame);
             }
 
             if (m_enableImageArriveSignal)
             {
-                emit imageArrive(FfmpegUtil::convertToQImage(pFrame));
+                emit imageArrive(FfmpegUtil::convertToQImage(avFrame));
+            }            
+        }
+        else
+        {
+            if (result != AVERROR(EAGAIN))
+            {
+                qCritical("failed to do the h264 decode, error is %d", result);
+                av_packet_unref(&avPacket);
+                av_frame_free(&avFrame);
+                break;
             }
-
-            // Free the frame
-            av_frame_unref(pFrame);
         }
 
-        // Free the packet
-        av_packet_unref(pPacket);
+        av_packet_unref(&avPacket);
+        av_frame_free(&avFrame);
     }
 
     // Clean up
-    av_packet_free(&pPacket);
-    av_frame_free(&pFrame);
     avcodec_free_context(&pDecoderCtx);
     avformat_close_input(&pRtmpFormatCtx);
 }
