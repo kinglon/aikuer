@@ -14,7 +14,8 @@ extern "C"
 class IRtmpFrameArriveCallback
 {
 public:
-    virtual void onRtmpFrameArrive(const AVFrame* frame) = 0;
+    // 处理函数需要释放frame
+    virtual void onRtmpFrameArrive(AVFrame* frame) = 0;
 };
 
 

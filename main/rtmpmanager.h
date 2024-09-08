@@ -3,8 +3,10 @@
 
 #include <QObject>
 #include "rtmppullthread.h"
+#include "rtmppushthread.h"
+#include "cameramanager.h"
 
-class RtmpManager : public QObject
+class RtmpManager : public QObject, public IFrameArriveCallback
 {
     Q_OBJECT
 public:
@@ -13,7 +15,11 @@ public:
 public:
     static RtmpManager* getInstance();
 
-    void startPull(QString pullUrl);
+    void startPush();
+
+    void stopPush();
+
+    void startPull();
 
     void stopPull();
 
@@ -22,11 +28,17 @@ public:
     // 用完要释放
     QImage* getRtmpPullImage();
 
+    virtual void onFrameArrive(AVFrame* frame) override;
+
 private slots:
+    void rtmpPushThreadFinish();
+
     void rtmpPullThreadFinish();
 
 private:
     RtmpPullThread* m_rtmpPullThread = nullptr;
+
+    RtmpPushThread* m_rtmpPushThread = nullptr;
 
     IRtmpFrameArriveCallback* m_rtmpFrameArriveCallback = nullptr;
 };

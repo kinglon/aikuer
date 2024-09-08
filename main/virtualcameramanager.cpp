@@ -84,10 +84,16 @@ bool VirtualCameraManager::enableVirtualCamera(bool enable)
     return true;
 }
 
-void VirtualCameraManager::onRtmpFrameArrive(const AVFrame* frame)
+void VirtualCameraManager::onRtmpFrameArrive(AVFrame* frame)
+{
+    sendFrame(frame);
+    av_frame_free(&frame);
+}
+
+void VirtualCameraManager::sendFrame(const AVFrame* frame)
 {
     if (!m_enableVirtualCamera)
-    {
+    {        
         return;
     }
 
@@ -100,7 +106,7 @@ void VirtualCameraManager::onRtmpFrameArrive(const AVFrame* frame)
         height = frame->height;
         camera = scCreateCamera(width, height, 60);
         if (camera == nullptr)
-        {
+        {            
             return;
         }
     }

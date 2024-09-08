@@ -29,6 +29,7 @@ SOURCES += \
     mainwindow.cpp \
     rtmpmanager.cpp \
     rtmppullthread.cpp \
+    rtmppushthread.cpp \
     settingmanager.cpp \
     uiutil.cpp \
     virtualcameramanager.cpp
@@ -54,6 +55,7 @@ HEADERS += \
     mainwindow.h \
     rtmpmanager.h \
     rtmppullthread.h \
+    rtmppushthread.h \
     settingmanager.h \
     uiutil.h \
     virtualcameramanager.h

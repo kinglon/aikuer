@@ -77,14 +77,52 @@ void CameraManager::stopReadCamera()
     m_cameraReadThread->setExit();
 }
 
+QSize CameraManager::getCameraFrameSize()
+{
+    if (isOpen())
+    {
+        return m_cameraReadThread->getCameraFrameSize();
+    }
+    return QSize();
+}
+
+AVPixelFormat CameraManager::getCameraFrameFormat()
+{
+    if (isOpen())
+    {
+        return m_cameraReadThread->getCameraFrameFormat();
+    }
+    return AV_PIX_FMT_YUV420P;
+}
+
 QImage* CameraManager::getCameraImage()
 {
-    if (m_cameraReadThread == nullptr || m_cameraReadThreadStopping)
+    if (!isOpen())
     {
         return nullptr;
     }
 
     return m_cameraReadThread->popImage();
+}
+
+void CameraManager::setFrameArriveCallback(IFrameArriveCallback* callback)
+{
+    if (!isOpen())
+    {
+        return;
+    }
+
+    m_cameraReadThread->setFrameArriveCallback(callback);
+}
+
+bool CameraManager::isOpen()
+{
+    if (m_cameraReadThread == nullptr || m_cameraReadThreadStopping)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool CameraManager::startReadCameraDirectly()
@@ -97,8 +135,7 @@ bool CameraManager::startReadCameraDirectly()
 
     m_cameraReadThread = new CameraReadThread();
     m_cameraReadThread->setCamera(m_currentCamera);
-    m_cameraReadThread->setRtmpPushUrl(LiveSwapManager::getInstance()->getPushUrl());
-    m_cameraReadThread->enableGenerateQImage();
+    m_cameraReadThread->enableGenerateQImage(true);
     connect(m_cameraReadThread, &CameraReadThread::runFinish, this, &CameraManager::cameraReadThreadFinish);
     connect(m_cameraReadThread, &CameraReadThread::finished, m_cameraReadThread, &QObject::deleteLater);
     m_cameraReadThread->start();

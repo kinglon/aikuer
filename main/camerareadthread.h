@@ -11,6 +11,13 @@ extern "C"
     #include "libavdevice/avdevice.h"
 }
 
+class IFrameArriveCallback
+{
+public:
+    // 处理函数负责释放frame
+    virtual void onFrameArrive(AVFrame* frame) = 0;
+};
+
 
 class CameraReadThread : public QThread
 {
@@ -23,16 +30,20 @@ public:
 public:
     void setExit() { m_exit = true; }
 
-    void setCamera(const AVInputFormat* camera) { m_camera = camera; }
-
-    void setRtmpPushUrl(QString rtmpPushUrl) { m_rtmpPushUrl = rtmpPushUrl; }
+    void setCamera(const AVInputFormat* camera) { m_camera = camera; }    
 
     void setFrameCount(int frameCount) { m_frameCount = frameCount; }
 
-    void enableGenerateQImage() { m_enableGenerateQImage = true; }
+    void enableGenerateQImage(bool enable) { m_enableGenerateQImage = enable; }
 
     // 用完要释放
     QImage* popImage();
+
+    void setFrameArriveCallback(IFrameArriveCallback* callback) { m_frameArriveCallback = callback; }
+
+    QSize getCameraFrameSize() { return m_cameraSize; }
+
+    AVPixelFormat getCameraFrameFormat() { return m_format; }
 
 signals:
     void runFinish();
@@ -50,13 +61,17 @@ private:
 
     const AVInputFormat* m_camera = nullptr;
 
-    QString m_rtmpPushUrl;
-
     int m_frameCount = 30;
 
     QImage* m_lastImage = nullptr;
 
     QMutex m_mutex;
+
+    IFrameArriveCallback* m_frameArriveCallback = nullptr;
+
+    QSize m_cameraSize;
+
+    AVPixelFormat m_format = AV_PIX_FMT_YUV420P;
 };
 
 #endif // CAMERAREADTHREAD_H

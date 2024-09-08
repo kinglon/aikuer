@@ -42,16 +42,10 @@ void MainWindow::initWindow()
 
     connect(LiveSwapManager::getInstance(), &LiveSwapManager::createLiveSwapResult, this, &MainWindow::onCreateLiveSwapResult);
     connect(ui->enableLiveSwapButton, &QPushButton::clicked, [this]() {
-            ui->enableLiveSwapButton->setEnabled(false);
-            LiveSwapManager::getInstance()->createLiveSwap();
+            onEnableLiveSwapBtnClicked();
         });
     connect(ui->stopLiveSwapButton, &QPushButton::clicked, [this]() {
-            ui->enableLiveSwapButton->setEnabled(true);
-            ui->stopLiveSwapButton->setEnabled(false);
-            LiveSwapManager::getInstance()->closeLiveSwap();
-            CameraManager::getInstance()->stopReadCamera();
-            CameraManager::getInstance()->startReadCamera();
-            RtmpManager::getInstance()->stopPull();
+            onStopLiveSwapBtnClicked();
         });
 
     connect(ui->refreshCameraButton, &QPushButton::clicked, [this]() {
@@ -100,9 +94,8 @@ void MainWindow::onCreateLiveSwapResult(bool ok, QString errorMsg)
     {
         ui->enableLiveSwapButton->setEnabled(false);
         ui->stopLiveSwapButton->setEnabled(true);
-        CameraManager::getInstance()->stopReadCamera();
-        CameraManager::getInstance()->startReadCamera();
-        RtmpManager::getInstance()->startPull(LiveSwapManager::getInstance()->getPushUrl());
+        RtmpManager::getInstance()->startPush();
+        RtmpManager::getInstance()->startPull();
     }
     else
     {
@@ -131,6 +124,27 @@ void MainWindow::onRefreshCameraBtnClicked()
     CameraManager::getInstance()->setCurrentCamera(cameras[0]);
     CameraManager::getInstance()->stopReadCamera();
     CameraManager::getInstance()->startReadCamera();
+}
+
+void MainWindow::onEnableLiveSwapBtnClicked()
+{
+    if (!CameraManager::getInstance()->isOpen())
+    {
+        UiUtil::showTip(QString::fromWCharArray(L"摄像头未打开"));
+        return;
+    }
+
+    ui->enableLiveSwapButton->setEnabled(false);
+    LiveSwapManager::getInstance()->createLiveSwap();
+}
+
+void MainWindow::onStopLiveSwapBtnClicked()
+{
+    ui->enableLiveSwapButton->setEnabled(true);
+    ui->stopLiveSwapButton->setEnabled(false);
+    LiveSwapManager::getInstance()->closeLiveSwap();
+    RtmpManager::getInstance()->stopPush();
+    RtmpManager::getInstance()->stopPull();
 }
 
 void MainWindow::closeEvent(QCloseEvent *)

@@ -15,7 +15,10 @@ public:
 
     bool enableVirtualCamera(bool enable);
 
-    virtual void onRtmpFrameArrive(const AVFrame* frame) override;
+    virtual void onRtmpFrameArrive(AVFrame* frame) override;
+
+private:
+    void sendFrame(const AVFrame* frame);
 
 private:
     bool m_enableVirtualCamera = false;

@@ -29,8 +29,16 @@ public:
 
     void stopReadCamera();
 
+    QSize getCameraFrameSize();
+
+    AVPixelFormat getCameraFrameFormat();
+
     // 用完要释放
     QImage* getCameraImage();
+
+    void setFrameArriveCallback(IFrameArriveCallback* callback);
+
+    bool isOpen();
 
 private:
     // 直接启动读摄像头，无需等待退出

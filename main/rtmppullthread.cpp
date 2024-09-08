@@ -136,10 +136,6 @@ void RtmpPullThread::run2()
         if (result == 0)
         {
             AVFrame* rgbFrame = FfmpegUtil::convertToRGB24Format(avFrame);
-            if (m_rtmpFrameArriveCallback)
-            {
-                m_rtmpFrameArriveCallback->onRtmpFrameArrive(rgbFrame);
-            }
 
             if (m_enableGenerateQImage)
             {
@@ -152,7 +148,15 @@ void RtmpPullThread::run2()
                 m_lastImage = image;
                 m_mutex.unlock();
             }
-            av_frame_free(&rgbFrame);
+
+            if (m_rtmpFrameArriveCallback)
+            {
+                m_rtmpFrameArriveCallback->onRtmpFrameArrive(rgbFrame);
+            }
+            else
+            {
+                av_frame_free(&rgbFrame);
+            }
         }
         else
         {
