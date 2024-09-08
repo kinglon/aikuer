@@ -16,6 +16,24 @@ RtmpPullThread::RtmpPullThread()
 
 }
 
+RtmpPullThread::~RtmpPullThread()
+{
+    if (m_lastImage)
+    {
+        delete m_lastImage;
+    }
+}
+
+QImage* RtmpPullThread::popImage()
+{
+    QImage* image = nullptr;
+    m_mutex.lock();
+    image = m_lastImage;
+    m_lastImage = nullptr;
+    m_mutex.unlock();
+    return image;
+}
+
 void RtmpPullThread::run()
 {
     run2();
@@ -117,15 +135,24 @@ void RtmpPullThread::run2()
         result = avcodec_receive_frame(pDecoderCtx, avFrame);
         if (result == 0)
         {
+            AVFrame* rgbFrame = FfmpegUtil::convertToRGB24Format(avFrame);
             if (m_rtmpFrameArriveCallback)
             {
-                m_rtmpFrameArriveCallback->onRtmpFrameArrive(avFrame);
+                m_rtmpFrameArriveCallback->onRtmpFrameArrive(rgbFrame);
             }
 
-            if (m_enableImageArriveSignal)
+            if (m_enableGenerateQImage)
             {
-                emit imageArrive(FfmpegUtil::convertToQImage(avFrame));
-            }            
+                QImage* image = FfmpegUtil::convertToQImage(rgbFrame);
+                m_mutex.lock();
+                if (m_lastImage)
+                {
+                    delete m_lastImage;
+                }
+                m_lastImage = image;
+                m_mutex.unlock();
+            }
+            av_frame_free(&rgbFrame);
         }
         else
         {

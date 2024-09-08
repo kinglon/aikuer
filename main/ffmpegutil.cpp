@@ -35,9 +35,8 @@ AVFrame* FfmpegUtil::convertToRGB24Format(const AVFrame* frame)
     return rgb_frame;
 }
 
-QImage* FfmpegUtil::convertToQImage(const AVFrame *originFrame)
+QImage* FfmpegUtil::convertToQImage(const AVFrame *frame)
 {
-    AVFrame* frame = convertToRGB24Format(originFrame);
     QImage* image = new QImage(frame->width, frame->height, QImage::Format_RGB32);
     for (int y = 0; y < frame->height; y++)
     {
@@ -50,6 +49,5 @@ QImage* FfmpegUtil::convertToQImage(const AVFrame *originFrame)
             ptr[3] = 255;
         }
     }
-    av_frame_free(&frame);
     return image;
 }

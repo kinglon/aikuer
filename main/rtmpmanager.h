@@ -19,12 +19,10 @@ public:
 
     void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback) { m_rtmpFrameArriveCallback = callback; }
 
-signals:
-    void receiveCameraImage(const QImage* image);
+    // 用完要释放
+    QImage* getRtmpPullImage();
 
 private slots:
-    void imageArrive(QImage* image);
-
     void rtmpPullThreadFinish();
 
 private:

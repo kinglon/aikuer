@@ -22,9 +22,8 @@ void RtmpManager::startPull(QString pullUrl)
 
     m_rtmpPullThread = new RtmpPullThread();
     m_rtmpPullThread->setRtmpPullUrl(pullUrl);
-    m_rtmpPullThread->setEnableImageArriveSignal(true);
+    m_rtmpPullThread->enableGenerateQImage();
     m_rtmpPullThread->setRtmpFrameArriveCallback(m_rtmpFrameArriveCallback);
-    connect(m_rtmpPullThread, &RtmpPullThread::imageArrive, this, &RtmpManager::imageArrive);
     connect(m_rtmpPullThread, &RtmpPullThread::runFinish, this, &RtmpManager::rtmpPullThreadFinish);
     connect(m_rtmpPullThread, &RtmpPullThread::finished, m_rtmpPullThread, &QObject::deleteLater);
     m_rtmpPullThread->start();
@@ -38,18 +37,20 @@ void RtmpManager::stopPull()
     }
 
     m_rtmpPullThread->setExit();
-    m_rtmpPullThread->setEnableImageArriveSignal(false);
     m_rtmpPullThread->setRtmpFrameArriveCallback(nullptr);
-    disconnect(m_rtmpPullThread, &RtmpPullThread::imageArrive, this, &RtmpManager::imageArrive);
     disconnect(m_rtmpPullThread, &RtmpPullThread::runFinish, this, &RtmpManager::rtmpPullThreadFinish);
 
     m_rtmpPullThread = nullptr;
 }
 
-void RtmpManager::imageArrive(QImage* image)
+QImage* RtmpManager::getRtmpPullImage()
 {
-    emit receiveCameraImage(image);
-    delete image;
+    if (m_rtmpPullThread)
+    {
+        return m_rtmpPullThread->popImage();
+    }
+
+    return nullptr;
 }
 
 void RtmpManager::rtmpPullThreadFinish()

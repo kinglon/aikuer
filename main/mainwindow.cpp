@@ -66,10 +66,6 @@ void MainWindow::initWindow()
     connect(updateImageTimer, &QTimer::timeout, this, &MainWindow::onUpdateImage);
     updateImageTimer->start();
 
-    connect(RtmpManager::getInstance(), &RtmpManager::receiveCameraImage, [this](const QImage* image){
-        UiUtil::showImage(QPixmap::fromImage(*image), *ui->rtmpImage);
-    });
-
     connect(ui->enableVCameraCheckBox, &QPushButton::clicked, [this]() {
             VirtualCameraManager::getInstance()->enableVirtualCamera(ui->enableVCameraCheckBox->isChecked());
         });
@@ -150,5 +146,12 @@ void MainWindow::onUpdateImage()
     {
         UiUtil::showImage(QPixmap::fromImage(*cameraImage), *ui->cameraImage);
         delete cameraImage;
+    }
+
+    QImage* rtmpPullImage = RtmpManager::getInstance()->getRtmpPullImage();
+    if (rtmpPullImage)
+    {
+        UiUtil::showImage(QPixmap::fromImage(*rtmpPullImage), *ui->rtmpImage);
+        delete rtmpPullImage;
     }
 }

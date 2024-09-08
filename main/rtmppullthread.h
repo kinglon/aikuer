@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QObject>
 #include <QImage>
+#include <QMutex>
 
 extern "C"
 {
@@ -23,21 +24,21 @@ class RtmpPullThread : public QThread
 
 public:
     RtmpPullThread();
+    ~RtmpPullThread();
 
 public:
     void setExit() { m_exit = true; }
 
     void setRtmpPullUrl(QString rtmpPullUrl) { m_rtmpPullUrl = rtmpPullUrl; }
 
-    // 启用后，需要处理imageArrive信号
-    void setEnableImageArriveSignal(bool enable) { m_enableImageArriveSignal = enable; }
+    void enableGenerateQImage() { m_enableGenerateQImage = true; }
+
+    // 用完要释放
+    QImage* popImage();
 
     void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback) { m_rtmpFrameArriveCallback = callback; }
 
 signals:
-    // image需要释放
-    void imageArrive(QImage* image);
-
     void runFinish();
 
 protected:
@@ -49,11 +50,15 @@ private:
 private:
     bool m_exit = false;
 
-    bool m_enableImageArriveSignal = false;
+    bool m_enableGenerateQImage = false;
 
     QString m_rtmpPullUrl;
 
     IRtmpFrameArriveCallback* m_rtmpFrameArriveCallback = nullptr;
+
+    QImage* m_lastImage = nullptr;
+
+    QMutex m_mutex;
 };
 
 #endif // RTMPPULLTHREAD_H

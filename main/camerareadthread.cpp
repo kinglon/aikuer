@@ -257,7 +257,10 @@ void CameraReadThread::run2()
 
         if (m_enableGenerateQImage)
         {
-            QImage* image = FfmpegUtil::convertToQImage(avFrame);
+            AVFrame* rgbFrame = FfmpegUtil::convertToRGB24Format(avFrame);
+            QImage* image = FfmpegUtil::convertToQImage(rgbFrame);
+            av_frame_free(&rgbFrame);
+
             m_mutex.lock();
             if (m_lastImage)
             {
