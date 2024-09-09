@@ -61,8 +61,8 @@ void MainWindow::initWindow()
     updateImageTimer->start();
 
     connect(ui->enableVCameraCheckBox, &QPushButton::clicked, [this]() {
-            VirtualCameraManager::getInstance()->enableVirtualCamera(ui->enableVCameraCheckBox->isChecked());
-        });
+        onEnableVCameraCheckBoxClicked();
+    });
 }
 
 void MainWindow::onAvataChanged()
@@ -145,6 +145,21 @@ void MainWindow::onStopLiveSwapBtnClicked()
     LiveSwapManager::getInstance()->closeLiveSwap();
     RtmpManager::getInstance()->stopPush();
     RtmpManager::getInstance()->stopPull();
+}
+
+void MainWindow::onEnableVCameraCheckBoxClicked()
+{
+    if (ui->enableVCameraCheckBox->isChecked())
+    {
+        if (!VirtualCameraManager::getInstance()->enableVirtualCamera(true))
+        {
+            ui->enableVCameraCheckBox->setChecked(false);
+        }
+    }
+    else
+    {
+        VirtualCameraManager::getInstance()->enableVirtualCamera(false);
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *)

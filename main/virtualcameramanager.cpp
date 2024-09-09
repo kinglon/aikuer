@@ -9,7 +9,7 @@
 VirtualCameraManager::VirtualCameraManager(QObject *parent)
     : QObject{parent}
 {
-    RtmpManager::getInstance()->setRtmpFrameArriveCallback(this);
+
 }
 
 VirtualCameraManager* VirtualCameraManager::getInstance()
@@ -23,6 +23,7 @@ bool VirtualCameraManager::enableVirtualCamera(bool enable)
     if (!enable)
     {
         m_enableVirtualCamera = false;
+        RtmpManager::getInstance()->setRtmpFrameArriveCallback(nullptr);
         return true;
     }
 
@@ -49,29 +50,25 @@ bool VirtualCameraManager::enableVirtualCamera(bool enable)
         }
 
         // 启动安装程序
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        sa.bInheritHandle = TRUE;
-        sa.lpSecurityDescriptor = NULL;
-
-        STARTUPINFO si;
-        PROCESS_INFORMATION pi;
-        ZeroMemory(&si, sizeof(si));
-        ZeroMemory(&pi, sizeof(pi));
-        si.cb = sizeof(si);
-
+        SHELLEXECUTEINFO sei;
+        ZeroMemory(&sei, sizeof(sei));
+        sei.cbSize = sizeof(sei);
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = L"runas";
         std::wstring installerFilePath = CImPath::GetSoftInstallPath() + L"x64\\jericcam_installer.exe";
-        wchar_t command[3*MAX_PATH];
-        _snwprintf_s(command, 3*MAX_PATH, L"\"%s\" register \"%s\" ", installerFilePath.c_str(), dllFilePath.c_str());
-        if (!CreateProcess(NULL, (LPWSTR)command, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
+        sei.lpFile = installerFilePath.c_str();
+        wchar_t parameter[2*MAX_PATH];
+        _snwprintf_s(parameter, 2*MAX_PATH, L"register \"%s\" ", dllFilePath.c_str());
+        sei.lpParameters = parameter;
+
+        if (!ShellExecuteEx(&sei))
         {
-            qCritical("failed to start installer process, error is %d", GetLastError());
+            qCritical("failed to start installer, error is %d", GetLastError());
             return false;
         }
 
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        CloseHandle(pi.hThread);
-        CloseHandle(pi.hProcess);
+        WaitForSingleObject(sei.hProcess, INFINITE);
+        CloseHandle(sei.hProcess);
 
         // 创建标志文件
         if (flagFile.open(QFile::WriteOnly))
@@ -81,6 +78,7 @@ bool VirtualCameraManager::enableVirtualCamera(bool enable)
     }
 
     m_enableVirtualCamera = true;
+    RtmpManager::getInstance()->setRtmpFrameArriveCallback(this);
     return true;
 }
 
@@ -120,25 +118,22 @@ void VirtualCameraManager::sendFrame(const AVFrame* frame)
         return;
     }
 
+    // rgb24转成bgra后推给虚拟摄像头
+    AVFrame *bgraFrame = av_frame_alloc();
+    bgraFrame->width = frame->width;
+    bgraFrame->height = frame->height;
+    bgraFrame->format = AV_PIX_FMT_BGRA;
+    av_frame_get_buffer(bgraFrame, 0);
+    SwsContext *swsContext = sws_getContext(frame->width, frame->height, AV_PIX_FMT_RGB24,
+                                                bgraFrame->width, bgraFrame->height, AV_PIX_FMT_BGRA,
+                                                SWS_BILINEAR, NULL, NULL, NULL);
+    sws_scale(swsContext, frame->data, frame->linesize, 0, frame->height,
+              bgraFrame->data, bgraFrame->linesize);
+
+    uint8_t *bgraData = bgraFrame->data[0];
     int dataSize = frame->width * frame->height * 4; // 4 bytes per pixel for BGRA format
-    BYTE* pixelData = new BYTE[dataSize];
-    if (pixelData == nullptr)
-    {
-        return;
-    }
+    scSendFrame(camera, bgraData, dataSize);
 
-    for (int y = 0; y < frame->height; y++)
-    {
-        for (int x = 0; x < frame->width; x++)
-        {
-            uint8_t *ptr = pixelData + y * frame->width + x * 4;
-            ptr[0] = frame->data[0][y * frame->linesize[0] + x * 3 + 2];
-            ptr[1] = frame->data[0][y * frame->linesize[0] + x * 3 + 1];
-            ptr[2] = frame->data[0][y * frame->linesize[0] + x * 3];
-            ptr[3] = 255;
-        }
-    }
-
-    scSendFrame(camera, pixelData, dataSize);
-    delete[] pixelData;
+    av_frame_free(&bgraFrame);
+    sws_freeContext(swsContext);
 }

@@ -86,6 +86,16 @@ void RtmpManager::stopPull()
     m_rtmpPullThread = nullptr;
 }
 
+void RtmpManager::setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback)
+{
+    m_rtmpFrameArriveCallback = callback;
+    if (m_rtmpPullThread)
+    {
+        m_rtmpPullThread->setRtmpFrameArriveCallback(m_rtmpFrameArriveCallback);
+    }
+}
+
+
 QImage* RtmpManager::getRtmpPullImage()
 {
     if (m_rtmpPullThread)

@@ -30,6 +30,8 @@ private slots:
 
     void onStopLiveSwapBtnClicked();
 
+    void onEnableVCameraCheckBoxClicked();
+
     void closeEvent(QCloseEvent *e);
 
     void onUpdateImage();

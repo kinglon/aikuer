@@ -125,8 +125,14 @@ void RtmpPullThread::run2()
         result = av_read_frame(pRtmpFormatCtx, &avPacket);
         if (result < 0)
         {
-            qCritical("failed to read frame from rtmp, error is %d", result);
-            break;
+            if (result == AVERROR_EOF)
+            {
+                qInfo("rtmp not have more data");
+                break;
+            }
+
+            qDebug("failed to read frame from rtmp, error is %d", result);
+            continue;
         }
 
         // Decode the frame

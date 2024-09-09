@@ -23,7 +23,7 @@ public:
 
     void stopPull();
 
-    void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback) { m_rtmpFrameArriveCallback = callback; }
+    void setRtmpFrameArriveCallback(IRtmpFrameArriveCallback* callback);
 
     // 用完要释放
     QImage* getRtmpPullImage();

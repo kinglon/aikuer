@@ -51,7 +51,7 @@ void RtmpPushThread::run2()
     h264CodecCtx->time_base = {1, 30};
     h264CodecCtx->framerate = {30, 1};
     h264CodecCtx->gop_size = 10;
-    h264CodecCtx->max_b_frames = 0;
+    h264CodecCtx->max_b_frames = 1;
     h264CodecCtx->pix_fmt = m_format;
 
     // 打开编码器
@@ -126,20 +126,25 @@ void RtmpPushThread::run2()
         }
 
         // h264 encode
+        qint64 encodeBegin = GetTickCount64();
         avcodec_send_frame(h264CodecCtx, avFrame);
 
         AVPacket* avPacket = av_packet_alloc();
         result = avcodec_receive_packet(h264CodecCtx, avPacket);
+        qint64 encodeEnd = GetTickCount64();
+        qDebug("h264 encode take time: %d", encodeEnd - encodeBegin);
+        frameCount += 1;
         if (result >= 0)
         {
             av_interleaved_write_frame(pRtmpFormatCtx, avPacket);
-            frameCount += 1;
+            qint64 pushEnd = GetTickCount64();
+            qDebug("push frame take time: %d", pushEnd - encodeEnd);
         }
         else
         {
             if (result != AVERROR(EAGAIN))
             {
-                qCritical("failed to do the h264 encode, error is %d", result);
+                qDebug("failed to do the h264 encode, error is %d", result);
                 av_packet_free(&avPacket);
                 av_frame_free(&avFrame);
                 break;

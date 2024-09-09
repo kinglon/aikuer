@@ -49,7 +49,7 @@ void CameraReadThread::run2()
 {
     // Initialize FFmpeg
     avformat_network_init();
-    // av_log_set_level(AV_LOG_DEBUG); // Set the log level
+    av_log_set_level(AV_LOG_ERROR); // Set the log level
     // av_log_set_callback(custom_log_callback); // Set the custom log callback function
 
     // Open the camera
