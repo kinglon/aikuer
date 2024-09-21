@@ -16,6 +16,16 @@ extern "C" {
 // Custom log callback function
 void custom_log_callback(void* ptr, int level, const char* fmt, va_list vl)
 {
+    if (level > AV_LOG_ERROR)
+    {
+        return;
+    }
+
+    if (strstr(fmt, "frame dropped"))
+    {
+        return;
+    }
+
     // Define the maximum log message length
     constexpr int MAX_LOG_LENGTH = 1024;
     char log_message[MAX_LOG_LENGTH];
@@ -49,13 +59,13 @@ void CameraReadThread::run2()
 {
     // Initialize FFmpeg
     avformat_network_init();
-    av_log_set_level(AV_LOG_ERROR); // Set the log level
-    // av_log_set_callback(custom_log_callback); // Set the custom log callback function
+    av_log_set_callback(custom_log_callback); // Set the custom log callback function
 
     // Open the camera
-    AVFormatContext* pCameraFormatCtx = avformat_alloc_context();
-    AVDictionary* options = nullptr;
+    AVFormatContext* pCameraFormatCtx = avformat_alloc_context();    
+
     // Set encoder options for zero latency
+    AVDictionary* options = nullptr;    
     av_dict_set(&options, "preset", "ultrafast", 0);
     av_dict_set(&options, "tune", "zerolatency", 0);
     av_dict_set(&options, "crf", "23", 0);

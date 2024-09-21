@@ -26,14 +26,10 @@ void RtmpManager::startPush()
     {
         qCritical("the size of camera frame is (0, 0)");
         return;
-    }
-
-    AVPixelFormat format = CameraManager::getInstance()->getCameraFrameFormat();
+    }    
 
     m_rtmpPushThread = new RtmpPushThread();
     m_rtmpPushThread->setRtmpPushUrl(LiveSwapManager::getInstance()->getPushUrl());
-    m_rtmpPushThread->setSize(cameraFrameSize.width(), cameraFrameSize.height());
-    m_rtmpPushThread->setFormat(format);
     connect(m_rtmpPushThread, &RtmpPushThread::runFinish, this, &RtmpManager::rtmpPushThreadFinish);
     connect(m_rtmpPushThread, &RtmpPushThread::finished, m_rtmpPushThread, &QObject::deleteLater);
     m_rtmpPushThread->start();
@@ -64,7 +60,7 @@ void RtmpManager::startPull()
     }
 
     m_rtmpPullThread = new RtmpPullThread();
-    m_rtmpPullThread->setRtmpPullUrl(LiveSwapManager::getInstance()->getPushUrl());
+    m_rtmpPullThread->setRtmpPullUrl(LiveSwapManager::getInstance()->getPullUrl());
     m_rtmpPullThread->enableGenerateQImage();
     m_rtmpPullThread->setRtmpFrameArriveCallback(m_rtmpFrameArriveCallback);
     connect(m_rtmpPullThread, &RtmpPullThread::runFinish, this, &RtmpManager::rtmpPullThreadFinish);

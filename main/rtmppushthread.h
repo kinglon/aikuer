@@ -15,6 +15,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
 #include <libavutil/rational.h>
+#include <libavutil/intreadwrite.h>
 }
 
 
@@ -48,22 +49,36 @@ protected:
 private:
     void run2();
 
+    // 获取H264编码器
+    AVCodecContext* getH264Codec();
+
+    // 获取AAC编码器
+    AVCodecContext* getAacCodec();
+
+    // 推流
+    void pushStream(AVFormatContext* rtmpFormatCtx,
+                    AVCodecContext* h264CodecCtx, AVCodecContext* aacCodecCtx,
+                    AVStream* videoStream, AVStream* audioStream);
+
     AVFrame* popFrame();
+
+    // 将srcFrame处理成编码器需要的图片帧格式
+    AVFrame* handleFrame(const AVFrame* srcFrame, AVCodecContext* codecCtx);
 
 private:
     bool m_exit = false;
 
     QString m_rtmpPushUrl;
 
-    int m_width = 0;
+    int m_width = 640;
 
-    int m_height = 0;
+    int m_height = 480;
 
     AVPixelFormat m_format = AV_PIX_FMT_YUV420P;
 
     QQueue<AVFrame*> m_frames;
 
-    int m_frameCacheSize = 10;
+    int m_frameCacheSize = 30;
 
     QMutex m_mutex;
 };
