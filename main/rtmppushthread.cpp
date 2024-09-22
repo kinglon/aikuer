@@ -200,7 +200,6 @@ void RtmpPushThread::pushStream(AVFormatContext* rtmpFormatCtx,
     audioPacket.data = nullptr;
 
     int videoFrameCount = 0; // For video pts
-    int audioFrameCount = 0; // For audio pts
 
     int frameCount = 0;
     qint64 lastTime = GetTickCount64();
@@ -251,8 +250,11 @@ void RtmpPushThread::pushStream(AVFormatContext* rtmpFormatCtx,
                 break;
             }
             videoPacket.stream_index = videoStream->index;
+            videoPacket.pts = av_rescale_q_rnd(videoPacket.pts, h264CodecCtx->time_base, videoStream->time_base, AV_ROUND_NEAR_INF);
+            videoPacket.dts = av_rescale_q_rnd(videoPacket.dts, h264CodecCtx->time_base, videoStream->time_base, AV_ROUND_NEAR_INF);
             av_interleaved_write_frame(rtmpFormatCtx, &videoPacket);
             av_packet_unref(&videoPacket);
+            frameCount++;
         }
 
         av_frame_free(&videoFrame);
@@ -270,8 +272,8 @@ void RtmpPushThread::pushStream(AVFormatContext* rtmpFormatCtx,
             ((float*)audioFrame->data[0])[i] = 0.5f;
         }
 
-        // Encode Audio Frame
-        audioFrame->pts = audioFrameCount++;
+        // Encode Audio Frame        
+        audioFrame->pts = av_rescale_q_rnd(videoFrameCount, h264CodecCtx->time_base, aacCodecCtx->time_base, AV_ROUND_NEAR_INF);
         response = avcodec_send_frame(aacCodecCtx, audioFrame);
         if (response < 0)
         {
@@ -293,9 +295,10 @@ void RtmpPushThread::pushStream(AVFormatContext* rtmpFormatCtx,
                 break;
             }
             audioPacket.stream_index = audioStream->index;
+            audioPacket.pts = av_rescale_q_rnd(audioPacket.pts, aacCodecCtx->time_base, audioStream->time_base, AV_ROUND_NEAR_INF);
+            audioPacket.dts = av_rescale_q_rnd(audioPacket.dts, aacCodecCtx->time_base, audioStream->time_base, AV_ROUND_NEAR_INF);
             av_interleaved_write_frame(rtmpFormatCtx, &audioPacket);
-            av_packet_unref(&audioPacket);
-            frameCount++;
+            av_packet_unref(&audioPacket);            
         }
 
         av_frame_free(&audioFrame);
