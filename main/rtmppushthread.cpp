@@ -333,30 +333,76 @@ AVFrame* RtmpPushThread::popFrame()
 
 AVFrame* RtmpPushThread::handleFrame(const AVFrame* srcFrame, AVCodecContext* codecCtx)
 {
-    // Allocate the new AVFrame
-    AVFrame *destframe = av_frame_alloc();
+    if (codecCtx->pix_fmt != AV_PIX_FMT_YUV420P)
+    {
+        qCritical("it is not yuv420p format");
+        return nullptr;
+    }
 
-    // Set the parameters for the new frame
-    destframe->format = codecCtx->pix_fmt;
-    destframe->width = codecCtx->width;
-    destframe->height = codecCtx->height;
+    // Calculate the scaling factors for width and height
+    double widthRatio = static_cast<double>(codecCtx->width) / srcFrame->width;
+    double heightRatio = static_cast<double>(codecCtx->height) / srcFrame->height;
+    double aspectRatio = fmin(widthRatio, heightRatio);
 
-    // Allocate the frame data
-    av_frame_get_buffer(destframe, 0);
+    // Calculate the scaled width and height with the aspect ratio
+    int scaledWidth = static_cast<int>(srcFrame->width * aspectRatio);
+    int scaledHeight = static_cast<int>(srcFrame->height * aspectRatio);
 
-    // Create SwsContext for the conversion
+    // 等比例缩放
+    AVFrame *scaleframe = av_frame_alloc();
+    scaleframe->format = codecCtx->pix_fmt;
+    scaleframe->width = scaledWidth;
+    scaleframe->height = scaledHeight;
+    av_frame_get_buffer(scaleframe, 0);
+
     struct SwsContext *sws_ctx = sws_getContext(
         srcFrame->width, srcFrame->height, (AVPixelFormat)srcFrame->format,
-        destframe->width, destframe->height, (AVPixelFormat)destframe->format,
+        scaleframe->width, scaleframe->height, (AVPixelFormat)scaleframe->format,
         SWS_BILINEAR, NULL, NULL, NULL
     );
 
-    // Perform the color conversion
     sws_scale(sws_ctx, srcFrame->data, srcFrame->linesize, 0, srcFrame->height,
-              destframe->data, destframe->linesize);
+              scaleframe->data, scaleframe->linesize);
+    sws_freeContext(sws_ctx);    
 
-    // Free the SwsContext
-    sws_freeContext(sws_ctx);
+    if (scaledWidth == codecCtx->width && scaledHeight == codecCtx->height)
+    {
+        return scaleframe;
+    }
 
+    // 黑边填充
+    int paddingX = (codecCtx->width - scaledWidth) / 2;
+    int paddingY = (codecCtx->height - scaledHeight) / 2;
+
+    AVFrame *destframe = av_frame_alloc();
+    destframe->format = codecCtx->pix_fmt;
+    destframe->width = codecCtx->width;
+    destframe->height = codecCtx->height;
+    av_frame_get_buffer(destframe, 0);
+
+    // 全部初始化为黑色
+    memset(destframe->data[0], 0, destframe->linesize[0]*destframe->height);
+    memset(destframe->data[1], 128, destframe->linesize[1]*destframe->height/2);
+    memset(destframe->data[2], 128, destframe->linesize[2]*destframe->height/2);
+
+    // 拷贝
+    for (int y = 0; y < scaleframe->height; y++)
+    {
+        int srcOffset = scaleframe->linesize[0]*y;
+        int destOffset = destframe->linesize[0]*(y+paddingY) + paddingX;
+        memcpy(&destframe->data[0][destOffset], &scaleframe->data[0][srcOffset], scaleframe->linesize[0]);
+    }
+
+    for (int y = 0; y < scaleframe->height/2; y++)
+    {
+        for (int i=1; i<3; i++)
+        {
+            int srcOffset = scaleframe->linesize[i]*y;
+            int destOffset = destframe->linesize[i]*(y+paddingY/2) + paddingX/2;
+            memcpy(&destframe->data[i][destOffset], &scaleframe->data[i][srcOffset], scaleframe->linesize[i]);
+        }
+    }
+
+    av_frame_free(&scaleframe);
     return destframe;
 }
