@@ -1,5 +1,5 @@
 {   
     "log_level":2,
-    "login_host": "https://apitest.akool.com",
-    "faceswap_host": "https://faceswaptest.akool.com"
+    "login_host": "https://landing-test.akool.io/interface/user-api",
+    "faceswap_host": "https://landing-test.akool.io/interface/faceswap-api"
 }

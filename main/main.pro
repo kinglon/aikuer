@@ -64,6 +64,14 @@ FORMS += \
     loginwindow.ui \
     mainwindow.ui
 
+# Enable PDB generation
+QMAKE_CFLAGS_RELEASE += /Zi
+QMAKE_CXXFLAGS_RELEASE += /Zi
+QMAKE_LFLAGS_RELEASE += /DEBUG
+
+# Enable log context
+DEFINES += QT_MESSAGELOGCONTEXT
+
 # ffmpeg
 INCLUDEPATH += ../ffmpeg/include
 LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavutil -lswscale
@@ -71,4 +79,3 @@ LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavu
 # vcam
 INCLUDEPATH += ../vcam/include
 LIBS += -L"$$_PRO_FILE_PWD_/../vcam/lib" -ljericcam
-
