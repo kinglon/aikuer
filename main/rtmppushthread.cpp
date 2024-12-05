@@ -171,9 +171,10 @@ AVCodecContext* RtmpPushThread::getAacCodec()
     aacCodecCtx->bit_rate = 160 * 1024; // 160k
     aacCodecCtx->sample_rate  = 44100;
     aacCodecCtx->sample_fmt = AV_SAMPLE_FMT_FLTP;
-    aacCodecCtx->ch_layout.order = AV_CHANNEL_ORDER_NATIVE;
-    aacCodecCtx->ch_layout.nb_channels = 1;
-    aacCodecCtx->ch_layout.u.mask = AV_CH_LAYOUT_MONO;
+    // todo by yejinlong, 先注释下
+//    aacCodecCtx->ch_layout.order = AV_CHANNEL_ORDER_NATIVE;
+//    aacCodecCtx->ch_layout.nb_channels = 1;
+//    aacCodecCtx->ch_layout.u.mask = AV_CH_LAYOUT_MONO;
     aacCodecCtx->time_base = {1, aacCodecCtx->sample_rate};
 
     // 打开编码器
@@ -262,7 +263,8 @@ void RtmpPushThread::pushStream(AVFormatContext* rtmpFormatCtx,
         // Simulate capturing audio
         AVFrame *audioFrame = av_frame_alloc();
         audioFrame->format = aacCodecCtx->sample_fmt;
-        audioFrame->ch_layout = aacCodecCtx->ch_layout;
+        // todo by yejinlong, 先注释掉
+//        audioFrame->ch_layout = aacCodecCtx->ch_layout;
         audioFrame->nb_samples = aacCodecCtx->frame_size;
         av_frame_get_buffer(audioFrame, 0);
 

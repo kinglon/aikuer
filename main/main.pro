@@ -27,6 +27,8 @@ SOURCES += \
     loginwindow.cpp \
     main.cpp \
     mainwindow.cpp \
+    meetingcontroller.cpp \
+    meetingwindow.cpp \
     rtmpmanager.cpp \
     rtmppullthread.cpp \
     rtmppushthread.cpp \
@@ -53,6 +55,8 @@ HEADERS += \
     loginmanager.h \
     loginwindow.h \
     mainwindow.h \
+    meetingcontroller.h \
+    meetingwindow.h \
     rtmpmanager.h \
     rtmppullthread.h \
     rtmppushthread.h \
@@ -62,7 +66,8 @@ HEADERS += \
 
 FORMS += \
     loginwindow.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    meetingwindow.ui
 
 # Enable PDB generation
 QMAKE_CFLAGS_RELEASE += /Zi
@@ -73,9 +78,13 @@ QMAKE_LFLAGS_RELEASE += /DEBUG
 DEFINES += QT_MESSAGELOGCONTEXT
 
 # ffmpeg
-INCLUDEPATH += ../ffmpeg/include
-LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg/lib" -lavdevice -lavformat -lavcodec -lavutil -lswscale
+INCLUDEPATH += ../ffmpeg2/include
+LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg2" -lavdevice -lavformat -lavcodec -lavutil -lswscale
 
 # vcam
 INCLUDEPATH += ../vcam/include
 LIBS += -L"$$_PRO_FILE_PWD_/../vcam/lib" -ljericcam
+
+# agora
+INCLUDEPATH += ../agorasdk/high_level_api/include
+LIBS += -L"$$_PRO_FILE_PWD_/../agorasdk" -lagora_rtc_sdk.dll

@@ -69,7 +69,7 @@ void CameraReadThread::run2()
     av_dict_set(&options, "preset", "ultrafast", 0);
     av_dict_set(&options, "tune", "zerolatency", 0);
     av_dict_set(&options, "crf", "23", 0);
-    int result = avformat_open_input(&pCameraFormatCtx, nullptr, m_camera, &options);
+    int result = avformat_open_input(&pCameraFormatCtx, nullptr, (AVInputFormat*)m_camera, &options);
     av_dict_free(&options);
     if (result != 0)
     {

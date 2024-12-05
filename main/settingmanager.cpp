@@ -35,4 +35,5 @@ void SettingManager::Load()
     m_nLogLevel = root["log_level"].toInt();
     m_loginHost = root["login_host"].toString();
     m_faceSwapHost = root["faceswap_host"].toString();
+    m_meetingHost = root["meeting_host"].toString();
 }

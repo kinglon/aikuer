@@ -17,6 +17,8 @@ public:
 
     virtual void onRtmpFrameArrive(AVFrame* frame) override;
 
+    void sendFrame(int width, int height, void* data);
+
 private:
     void sendFrame(const AVFrame* frame);
 

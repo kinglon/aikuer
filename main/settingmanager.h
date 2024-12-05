@@ -20,4 +20,6 @@ public:
     QString m_loginHost;
 
     QString m_faceSwapHost;
+
+    QString m_meetingHost;
 };
