@@ -64,6 +64,8 @@ private:
 
     IRtcEngine* m_rtcEngine = nullptr;
 
+    AAudioDeviceManager* m_audioDeviceManager = nullptr;
+
     bool m_requestStop = false;
 };
 

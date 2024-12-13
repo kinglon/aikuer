@@ -25,7 +25,10 @@ MeetingWindow::~MeetingWindow()
 
 void MeetingWindow::initWindow()
 {
-    VirtualCameraManager::getInstance()->enableVirtualCamera(true);
+    if (!VirtualCameraManager::getInstance()->enableVirtualCamera(true))
+    {
+        onPrintLog(QString::fromWCharArray(L"虚拟摄像头安装失败"));
+    }
 
     QTimer* updateImageTimer = new QTimer(this);
     updateImageTimer->setInterval(20);

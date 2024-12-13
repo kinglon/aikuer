@@ -7,6 +7,7 @@
 #include "Utility/ImPath.h"
 #include "settingmanager.h"
 #include "loginwindow.h"
+#include "meetingwindow.h"
 
 CLogUtil* g_dllLog = nullptr;
 
@@ -60,14 +61,18 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    LoginWindow loginWindow;
-    loginWindow.show();
-    if (loginWindow.exec() != QDialog::Accepted)
-    {
-        return 0;
-    }
+//    LoginWindow loginWindow;
+//    loginWindow.show();
+//    if (loginWindow.exec() != QDialog::Accepted)
+//    {
+//        return 0;
+//    }
 
-    MainWindow w;
-    w.show();
+//    MainWindow w;
+//    w.show();
+
+    MeetingWindow meetingWindow;
+    meetingWindow.show();
+
     return a.exec();
 }

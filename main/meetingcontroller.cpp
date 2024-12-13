@@ -15,6 +15,7 @@ MeetingController::MeetingController(QObject *parent)
 
 void MeetingController::run()
 {
+    emit printLog(QString::fromWCharArray(L"开始获取频道信息"));
     sendGetAgoraConfigRequest();
 }
 
@@ -61,7 +62,7 @@ void MeetingController::onHttpResponse(QNetworkReply *reply)
 }
 
 bool MeetingController::handleGetAgoraConfigResponse(QNetworkReply *reply)
-{
+{    
     if (reply->error() != QNetworkReply::NoError)
     {
         qCritical("failed to send request of getting agora configuration, error: %d", reply->error());
@@ -101,17 +102,18 @@ bool MeetingController::handleGetAgoraConfigResponse(QNetworkReply *reply)
         return false;
     }
 
+
     QString appId = root["data"].toObject()["agora_app_id"].toString();
     QString token = root["data"].toObject()["agora_token"].toString();
     QString channel = root["data"].toObject()["agora_channel"].toString();
-    emit printLog(QString::fromWCharArray(L"获取频道信息成功，频道是%1").arg(channel));
+    emit printLog(QString::fromWCharArray(L"获取频道信息成功，频道是%1").arg(channel));    
 
     if (initAgoraSdk(appId))
     {
         ChannelMediaOptions options;
         options.channelProfile = CHANNEL_PROFILE_COMMUNICATION;
         options.clientRoleType = CLIENT_ROLE_BROADCASTER;
-        options.autoSubscribeAudio = false;
+        options.autoSubscribeAudio = true;
         options.autoSubscribeVideo = true;
         int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                                  channel.toStdString().c_str(),
@@ -119,7 +121,7 @@ bool MeetingController::handleGetAgoraConfigResponse(QNetworkReply *reply)
         if (ret != 0)
         {
             emit printLog(QString::fromWCharArray(L"加入频道失败"));
-            qCritical("failed to call joinChannel, error: %s", getAgoraSdkErrorDescription(ret));
+            qCritical("failed to call joinChannel, error: %d", ret);
         }
     }
 
@@ -131,6 +133,44 @@ void MeetingController::onJoinChannelSuccess(const char* channel, uid_t uid, int
     (void)channel;
     (void)uid;
     emit printLog(QString::fromWCharArray(L"加入频道成功"));
+
+    // 把音频播放设备设置为VAC的虚拟麦克风Line 1
+    bool useVirtualMicrophoneSuccess = false;
+    if (m_audioDeviceManager)
+    {
+        IAudioDeviceCollection *audioPlaybackDevices = (*m_audioDeviceManager)->enumeratePlaybackDevices();
+        if (audioPlaybackDevices)
+        {
+            char szDeviceName[1024] = {0};
+            char szDeviceId[1024] = {0};
+            for (int i = 0; i < audioPlaybackDevices->getCount(); i++)
+            {
+                int result = audioPlaybackDevices->getDevice(i, szDeviceName, szDeviceId);
+                if (result == 0)
+                {
+                    qInfo("virtual microphone, name=%s, device id=%s", szDeviceName, szDeviceId);
+                    if (strstr(szDeviceName, "Line 1"))
+                    {
+                        if ((*m_audioDeviceManager)->setPlaybackDevice(szDeviceId) == 0)
+                        {
+                            useVirtualMicrophoneSuccess = true;
+                        }
+                        break;
+                    }
+                }
+            }
+            audioPlaybackDevices->release();
+        }
+    }
+
+    if (useVirtualMicrophoneSuccess)
+    {
+        emit printLog(QString::fromWCharArray(L"使用虚拟麦克风作为音频播放设备成功"));
+    }
+    else
+    {
+        emit printLog(QString::fromWCharArray(L"使用虚拟麦克风作为音频播放设备失败"));
+    }
 }
 
 void MeetingController::onError(int err, const char* msg)
@@ -156,16 +196,19 @@ bool MeetingController::initAgoraSdk(QString appId)
     }
 
     RtcEngineContext context;
-    context.appId = appId.toStdString().c_str();
+    std::string appIdString = appId.toStdString();
+    context.appId = appIdString.c_str();
     context.eventHandler = this;
     context.channelProfile = CHANNEL_PROFILE_COMMUNICATION;
     int ret = m_rtcEngine->initialize(context);
     if (ret != 0)
     {
         emit printLog(QString::fromWCharArray(L"初始化声网SDK失败"));
-        qCritical("failed to call initialize, error: %s", getAgoraSdkErrorDescription(ret));
+        qCritical("failed to call initialize, error: %d", ret);
         return false;
     }
+
+    m_audioDeviceManager = new AAudioDeviceManager(m_rtcEngine);
 
     m_rtcEngine->enableAudio();
     m_rtcEngine->setAudioProfile(AUDIO_PROFILE_IOT);
@@ -176,7 +219,7 @@ bool MeetingController::initAgoraSdk(QString appId)
         ret = mediaEngine->registerVideoFrameObserver(this);
         if (ret != 0)
         {
-            qCritical("failed to call registerVideoFrameObserver, error: %s", getAgoraSdkErrorDescription(ret));
+            qCritical("failed to call registerVideoFrameObserver, error: %d", ret);
         }
     }
     emit printLog(QString::fromWCharArray(L"初始化声网SDK成功"));
@@ -185,6 +228,12 @@ bool MeetingController::initAgoraSdk(QString appId)
 
 void MeetingController::unInitAgoraSdk()
 {
+    if (m_audioDeviceManager)
+    {
+        m_audioDeviceManager->release();
+        m_audioDeviceManager = nullptr;
+    }
+
     if (m_rtcEngine)
     {
         m_rtcEngine->leaveChannel();
