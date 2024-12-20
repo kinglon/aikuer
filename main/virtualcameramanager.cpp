@@ -32,7 +32,7 @@ bool VirtualCameraManager::enableVirtualCamera(bool enable)
     std::wstring dataPath = CImPath::GetLocalAppDataPath() + L"JericCamera\\";
     std::wstring dllFilePath = dataPath + L"jericcam.dll";
     std::wstring newDllFilePath = CImPath::GetSoftInstallPath() + L"x64\\jericcam.dll";
-    std::wstring flagFilePath = dataPath + L"install";
+    std::wstring flagFilePath = dataPath + L"install2";
     QFile flagFile(QString::fromStdWString(flagFilePath));
     QFile dllFile(QString::fromStdWString(dllFilePath));
     if (!flagFile.exists() || !dllFile.exists())
@@ -58,7 +58,7 @@ bool VirtualCameraManager::enableVirtualCamera(bool enable)
         std::wstring installerFilePath = CImPath::GetSoftInstallPath() + L"x64\\jericcam_installer.exe";
         sei.lpFile = installerFilePath.c_str();
         wchar_t parameter[2*MAX_PATH];
-        _snwprintf_s(parameter, 2*MAX_PATH, L"register \"%s\" ", dllFilePath.c_str());
+        _snwprintf_s(parameter, 2*MAX_PATH, L"register \"%s\" 1", dllFilePath.c_str());
         sei.lpParameters = parameter;
 
         if (!ShellExecuteEx(&sei))
@@ -102,7 +102,7 @@ void VirtualCameraManager::sendFrame(const AVFrame* frame)
     {
         width = frame->width;
         height = frame->height;
-        camera = scCreateCamera(width, height, 60);
+        camera = scCreateCamera(0, width, height, 60);
         if (camera == nullptr)
         {            
             return;
@@ -152,7 +152,7 @@ void VirtualCameraManager::sendFrame(int imgWidth, int imgHeight, void* data)
     {
         width = imgWidth;
         height = imgHeight;
-        camera = scCreateCamera(width, height, 60);
+        camera = scCreateCamera(0, width, height, 60);
         if (camera == nullptr)
         {
             return;

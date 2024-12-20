@@ -15,12 +15,13 @@ extern "C"
 
     /*
     创建摄像头
+    @param index, 摄像头索引 0-3
     @param width，摄像头宽度
     @param height， 摄像头高度
     @param framerate, 帧率
     @return 摄像头句柄，调用其他接口时传入
     */
-    scCamera SOFTCAM_API scCreateCamera(int width, int height, float framerate = 60.0f);
+    scCamera SOFTCAM_API scCreateCamera(int index, int width, int height, float framerate = 60.0f);
 
     /*
     删除摄像头
@@ -53,16 +54,18 @@ extern "C"
 
     /*
     获取摄像头安装状态
+    @param index, 摄像头索引 0-3
     @param bInstalled, 调用成功后有效，true表示摄像头已经安装, false表示摄像头未安装
     @return true调用成功, false调用失败
     */
-    bool SOFTCAM_API scGetInstallationStatus(bool& bInstalled);
+    bool SOFTCAM_API scGetInstallationStatus(int index, bool& bInstalled);
 
     /*
     获取使用摄像头的应用列表
+    @param index, 摄像头索引 0-3
     @param pids，存放使用摄像头的应用进程
     @param size, pids数组大小
     @return 使用摄像头的应用数，应用进程id存放在pids里面，返回值不会超过输入参数size
     */
-    int SOFTCAM_API scGetCameraUsers(unsigned int* pids, unsigned int size);
+    int SOFTCAM_API scGetCameraUsers(int index, unsigned int* pids, unsigned int size);
 }
