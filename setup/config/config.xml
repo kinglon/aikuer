@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Akool Camera</Name>
+    <Version>1.0.0</Version>
+    <Title>Akool Camera</Title>
+    <Publisher>akool</Publisher>
+    <TargetDir>@ApplicationsDir@/AkoolCamera</TargetDir>
+    <ControlScript>controlscript.qs</ControlScript>
+    <Translations>
+        <Translation>en.qm</Translation>
+    </Translations>
+    <WizardShowPageList>false</WizardShowPageList>
+    <MaintenanceToolName>uninstall</MaintenanceToolName>
+    <MaintenanceToolIniFile>uninstall.ini</MaintenanceToolIniFile>
+</Installer>

@@ -20,65 +20,15 @@ VirtualCameraManager* VirtualCameraManager::getInstance()
 
 bool VirtualCameraManager::enableVirtualCamera(bool enable)
 {
+    m_enableVirtualCamera = enable;
     if (!enable)
-    {
-        m_enableVirtualCamera = false;
-        RtmpManager::getInstance()->setRtmpFrameArriveCallback(nullptr);
-        return true;
+    {        
+        RtmpManager::getInstance()->setRtmpFrameArriveCallback(nullptr);        
     }
-
-    // 检查虚拟摄像头是否已经安装
-    bool install = true;
-    std::wstring dataPath = CImPath::GetLocalAppDataPath() + L"JericCamera\\";
-    std::wstring dllFilePath = dataPath + L"jericcam.dll";
-    std::wstring newDllFilePath = CImPath::GetSoftInstallPath() + L"x64\\jericcam.dll";
-    std::wstring flagFilePath = dataPath + L"install2";
-    QFile flagFile(QString::fromStdWString(flagFilePath));
-    QFile dllFile(QString::fromStdWString(dllFilePath));
-    if (!flagFile.exists() || !dllFile.exists())
+    else
     {
-        install = false;
+        RtmpManager::getInstance()->setRtmpFrameArriveCallback(this);
     }
-
-    if (!install)
-    {
-        CreateDirectory(dataPath.c_str(), nullptr);
-        if (!CopyFile(newDllFilePath.c_str(), dllFilePath.c_str(), FALSE))
-        {
-            qCritical("failed to copy the virtual camera dll");
-            return false;
-        }
-
-        // 启动安装程序
-        SHELLEXECUTEINFO sei;
-        ZeroMemory(&sei, sizeof(sei));
-        sei.cbSize = sizeof(sei);
-        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-        sei.lpVerb = L"runas";
-        std::wstring installerFilePath = CImPath::GetSoftInstallPath() + L"x64\\jericcam_installer.exe";
-        sei.lpFile = installerFilePath.c_str();
-        wchar_t parameter[2*MAX_PATH];
-        _snwprintf_s(parameter, 2*MAX_PATH, L"register \"%s\" 1", dllFilePath.c_str());
-        sei.lpParameters = parameter;
-
-        if (!ShellExecuteEx(&sei))
-        {
-            qCritical("failed to start installer, error is %d", GetLastError());
-            return false;
-        }
-
-        WaitForSingleObject(sei.hProcess, INFINITE);
-        CloseHandle(sei.hProcess);
-
-        // 创建标志文件
-        if (flagFile.open(QFile::WriteOnly))
-        {
-            flagFile.close();
-        }
-    }
-
-    m_enableVirtualCamera = true;
-    RtmpManager::getInstance()->setRtmpFrameArriveCallback(this);
     return true;
 }
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Akool Camera</DisplayName>
+    <Description>Akool Camera</Description>
+    <Version>1.0.0</Version>
+    <ReleaseDate>2025-02-10</ReleaseDate>    
+    <Default>true</Default>
+    <RequiresAdminRights>false</RequiresAdminRights>
+</Package>

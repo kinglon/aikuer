@@ -56,6 +56,8 @@ compile_commands.json
 # my
 ds
 package
+package2
+data
 doc/*
 !doc/flowgraph.json
 *.bat
