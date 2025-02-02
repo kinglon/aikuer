@@ -22,6 +22,7 @@ SOURCES += \
     ffmpegutil.cpp \
     filedownloader.cpp \
     httpclientbase.cpp \
+    ipcworker.cpp \
     liveswapmanager.cpp \
     loginmanager.cpp \
     loginwindow.cpp \
@@ -51,6 +52,7 @@ HEADERS += \
     ffmpegutil.h \
     filedownloader.h \
     httpclientbase.h \
+    ipcworker.h \
     liveswapmanager.h \
     loginmanager.h \
     loginwindow.h \
