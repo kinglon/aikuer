@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>content/qml/AvatarItem.qml</file>
+        <file>content/qml/ButtonBase.qml</file>
+        <file>content/qml/ChooseAvatarWindow.qml</file>
+        <file>content/qml/MainWindow.qml</file>
+        <file>content/qml/NewAvatarButton.qml</file>
+        <file>content/qml/WindowBase.qml</file>
+        <file>content/res/avatar_demo.png</file>
+        <file>content/res/icon1.png</file>
+        <file>content/res/logo.png</file>
+        <file>content/res/waiting_play.png</file>
+    </qresource>
+    <qresource prefix="/qml"/>
+    <qresource prefix="/res"/>
+    <qresource prefix="/qml" lang="cn"/>
+</RCC>
