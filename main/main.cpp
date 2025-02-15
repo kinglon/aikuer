@@ -8,6 +8,9 @@
 #include "settingmanager.h"
 #include "loginwindow.h"
 #include "meetingwindow.h"
+#include "ipcworker.h"
+
+#define IPC_KEY  "{4ED33E4A-ee3A-920A-8523-158D74420098}"
 
 CLogUtil* g_dllLog = nullptr;
 
@@ -43,8 +46,18 @@ int main(int argc, char *argv[])
     // 单实例
     const wchar_t* mutexName = L"{4ED33E4A-D83A-920A-8523-158D74420098}";
     HANDLE mutexHandle = CreateMutexW(nullptr, TRUE, mutexName);
-    if (mutexHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
+    if (mutexHandle == nullptr)
     {
+        return 0;
+    }
+    else if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        if (argc > 1)
+        {
+            g_dllLog = CLogUtil::GetLog(L"main2");
+            qInstallMessageHandler(logToFile);
+            IpcWorker::sendData(IPC_KEY, argv[1]);
+        }
         return 0;
     }
 
@@ -70,6 +83,10 @@ int main(int argc, char *argv[])
 
 //    MainWindow w;
 //    w.show();
+
+    IpcWorker ipcWorker;
+    ipcWorker.setKey(IPC_KEY);
+    ipcWorker.start();
 
     MeetingWindow meetingWindow;
     meetingWindow.show();
