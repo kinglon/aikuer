@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QCoreApplication>
 #include "settingmanager.h"
+#include "../Utility/DumpUtil.h"
 
 MainController::MainController(QObject *parent)
     : QObject{parent}
@@ -128,6 +129,7 @@ void MainController::quitApp()
         if (m_meetingController == nullptr)
         {
             timer->stop();
+            CDumpUtil::Enable(false);
             QCoreApplication::exit(0);
         }
     });

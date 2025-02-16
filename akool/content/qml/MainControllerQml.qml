@@ -50,6 +50,6 @@ QtObject {
     }
 
     function quitApp() {
-        mainController.quitApp()
+        MainController.quitApp()
     }
 }

@@ -155,7 +155,7 @@ WindowBase {
                             anchors.fill: parent
 
                             onClicked: {
-                                chooseAvatarWindow = chooseAvatarWindowComponent.createObject(mainWindow, {"mainController": mainController})
+                                var chooseAvatarWindow = chooseAvatarWindowComponent.createObject(mainWindow, {"mainController": mainController})
                                 chooseAvatarWindow.confirmClick.connect(function() {
                                     letChatArea.visible = true
                                 })
