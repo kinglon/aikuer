@@ -145,13 +145,13 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
     for (auto avatar : avatar_result)
     {
         QJsonObject avatarJson = avatar.toObject();
-        if (!avatarJson.contains("_id") || !avatarJson.contains("crop_arr") || avatarJson["crop_arr"].toArray().size() == 0)
+        if (!avatarJson.contains("avatar_id") || !avatarJson.contains("crop_arr") || avatarJson["crop_arr"].toArray().size() == 0)
         {
             continue;
         }
 
         Avatar avata;
-        avata.m_avatarId = avatarJson["_id"].toString();
+        avata.m_avatarId = avatarJson["avatar_id"].toString();
         avata.m_avatarUrl = avatarJson["crop_arr"].toArray()[0].toString();
 
         QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;

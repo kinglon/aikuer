@@ -17,6 +17,10 @@ WindowBase {
     title: "Choose Avatar"
     flags: Qt.Dialog | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
+    property var mainController: null
+
+    signal confirmClick()
+
     Item  {
         parent: contentArea
         width: parent.width-36*2
@@ -83,24 +87,14 @@ WindowBase {
                         borderRadius: avataList.borderRadius
                         isSelect: avatarItem.isSelect
                         visible: avatarItem.type==2
+
+                        onAvatarClick: {
+                            mainController.setSelectAvatar(avatarId)
+                        }
                     }
                 }
 
-                model: ListModel {
-                    ListElement {
-                        type: 1
-                        avatarId: "1"
-                        avatarImage: ""
-                        isSelect: true
-                    }
-
-                    ListElement {
-                        type: 2
-                        avatarId: "2"
-                        avatarImage: "../res/avatar_demo.png"
-                        isSelect: false
-                    }
-                }
+                model: mainController.avatarModels
             }
         }
 
@@ -113,6 +107,10 @@ WindowBase {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 36
+
+            onClicked: {
+                chooseAvatarWindow.confirmClick()
+            }
         }
 
         // 取消按钮

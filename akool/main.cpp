@@ -7,8 +7,7 @@
 #include "settingmanager.h"
 #include "ipcworker.h"
 #include "maincontroller.h"
-
-#define IPC_KEY  "{4ED33E4A-ee3A-920A-8523-158D74420098}"
+#include "memoryimageprovider.h"
 
 CLogUtil* g_dllLog = nullptr;
 
@@ -77,7 +76,10 @@ int main(int argc, char *argv[])
     QFont defaultFont("Arial");
     app.setFont(defaultFont);
 
+    MemoryImageProvider memoryImageProvider;
+
     QQmlApplicationEngine engine;
+    engine.addImageProvider("memory", &memoryImageProvider);
     const QUrl url(QStringLiteral("qrc:/content/qml/MainWindow.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
     }, Qt::QueuedConnection);
     engine.load(url);
 
-    MainController controller;
+    MainController controller;    
     if (argc < 2)
     {
         qCritical("miss the launch param");
@@ -96,6 +98,8 @@ int main(int argc, char *argv[])
         controller.setLaunchParam(argv[1]);
         controller.run();
     }
+
+    memoryImageProvider.setMainController(&controller);
 
     return app.exec();
 }

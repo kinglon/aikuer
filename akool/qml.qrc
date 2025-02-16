@@ -10,8 +10,9 @@
         <file>content/res/icon1.png</file>
         <file>content/res/logo.png</file>
         <file>content/res/waiting_play.png</file>
+        <file>content/qml/MainControllerQml.qml</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>
-    <qresource prefix="/qml" lang="cn"/>
+    <qresource lang="cn" prefix="/qml"/>
 </RCC>

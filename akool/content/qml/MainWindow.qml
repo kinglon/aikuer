@@ -7,7 +7,7 @@ WindowBase {
     id: mainWindow
     width: 834
     height: 650
-    backgroundColor: "#0B0B0D"
+    backgroundColor: "#0B0B0D"    
 
     ColumnLayout  {
         parent: contentArea
@@ -66,8 +66,18 @@ WindowBase {
             Image {
                 id: videoPlayer
                 anchors.fill: parent
-                source: "../res/waiting_play.png"
                 fillMode: Image.PreserveAspectCrop
+
+                Timer {
+                    interval: 60 // Timer interval in milliseconds
+                    running: true // Start the timer immediately
+                    repeat: true // Repeat the timer indefinitely
+
+                    onTriggered: {
+                        videoPlayer.source = ""
+                        videoPlayer.source = "image://memory/videoPlayer"
+                    }
+                }
             }
 
             // Let's chat 按钮
@@ -94,6 +104,11 @@ WindowBase {
                     bgHoverColor: bgClickColor
                     bgClickColor: "#6349F5"
                     textNormalColor: "#F5F5F7"
+
+                    onClicked: {
+                        letChatArea.visible = false
+                        mainController.beginChat()
+                    }
                 }
             }
         }
@@ -140,7 +155,10 @@ WindowBase {
                             anchors.fill: parent
 
                             onClicked: {
-                                chooseAvatarWindowComponent.createObject(mainWindow)
+                                chooseAvatarWindow = chooseAvatarWindowComponent.createObject(mainWindow, {"mainController": mainController})
+                                chooseAvatarWindow.confirmClick.connect(function() {
+                                    letChatArea.visible = true
+                                })
                             }
                         }
                     }
@@ -156,29 +174,20 @@ WindowBase {
                     anchors.bottom: parent.bottom
                     color: "transparent"
 
-                    // New Avatar按钮
-                    NewAvatarButton {
-                        id: newAvatarBtn
-                        width: height
-                        height: parent.height
-                        anchors.left: parent.left
-                        borderRadius: avatarArea.borderRadius
-                    }
-
                     // Avatar列表
                     GridView {
                         // 头像之间空距
                         property int space: 8
 
                         id: avataList
-                        width: parent.width-newAvatarBtn.width
-                        height: parent.height
-                        anchors.right: parent.right
+                        anchors.fill: parent
                         clip: true                        
                         cellWidth: height+space
                         cellHeight: height
 
                         delegate: Rectangle {
+                            // 1是new avatar按钮, 2是avatar图像
+                            required property int type
                             required property string avatarId
                             required property string avatarImage
                             required property bool isSelect
@@ -188,30 +197,34 @@ WindowBase {
                             height: avataList.cellHeight
                             color: "transparent"
 
-                            AvatarItem {
-                                width: parent.width-avataList.space
+                            // New Avatar按钮
+                            NewAvatarButton {
+                                id: newAvatarBtn
+                                width: height
                                 height: parent.height
-                                anchors.right: parent.right
-                                avatarId: avatarId
+                                anchors.left: parent.left
+                                borderRadius: avatarArea.borderRadius
+                                visible: avatarItem.type==1
+                            }
+
+                            AvatarItem {
+                                width: height
+                                height: parent.height
+                                anchors.left: parent.left
+                                avatarId: avatarItem.avatarId
                                 avatarImage: avatarItem.avatarImage
                                 borderRadius: avatarArea.borderRadius
                                 isSelect: avatarItem.isSelect
+                                visible: avatarItem.type==2
+
+                                onAvatarClick: {
+                                    mainController.setSelectAvatar(avatarId)
+                                    letChatArea.visible = true
+                                }
                             }
                         }
 
-                        model: ListModel {
-                            ListElement {
-                                avatarId: "1"
-                                avatarImage: "../res/avatar_demo.png"
-                                isSelect: true
-                            }
-
-                            ListElement {
-                                avatarId: "2"
-                                avatarImage: "../res/avatar_demo.png"
-                                isSelect: false
-                            }
-                        }
+                        model: mainController.avatarModels
                     }
                 }
             }
@@ -222,6 +235,28 @@ WindowBase {
             Layout.fillWidth: true
             Layout.preferredHeight: 96
         }
+    }
+
+    MainControllerQml {
+        id: mainController
+
+        onShowQmlWindow: function(name) {
+            if (name === "main")
+            {
+                mainWindow.showNormal();
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        mainController.init()
+    }
+
+    //可能是qmltype信息不全，有M16警告，这里屏蔽下
+    //@disable-check M16
+    onClosing: function(closeEvent) {
+        closeEvent.accepted = false
+        mainController.quitApp();
     }
 
     Component {

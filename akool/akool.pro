@@ -18,7 +18,10 @@ SOURCES += \
         ipcworker.cpp \
         main.cpp \
         maincontroller.cpp \
-        settingmanager.cpp
+        meetingcontroller.cpp \
+        memoryimageprovider.cpp \
+        settingmanager.cpp \
+        virtualcameramanager.cpp
 
 RESOURCES += qml.qrc
 
@@ -55,7 +58,10 @@ HEADERS += \
     filedownloader.h \
     ipcworker.h \
     maincontroller.h \
-    settingmanager.h
+    meetingcontroller.h \
+    memoryimageprovider.h \
+    settingmanager.h \
+    virtualcameramanager.h
 
 # ffmpeg
 INCLUDEPATH += ../ffmpeg2/include
