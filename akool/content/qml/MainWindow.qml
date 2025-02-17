@@ -7,7 +7,10 @@ WindowBase {
     id: mainWindow
     width: 834
     height: 650
-    backgroundColor: "#0B0B0D"    
+    backgroundColor: "#0B0B0D"
+
+    // 当使用系统标题栏的时候，窗口显示的时候先白屏，再显示QML的内容，体验不好，所以先不显示，加载后再显示
+    opacity: 0
 
     ColumnLayout  {
         parent: contentArea
@@ -242,14 +245,15 @@ WindowBase {
 
         onShowQmlWindow: function(name) {
             if (name === "main")
-            {
-                mainWindow.showNormal();
+            {                
+                mainWindow.raise();
             }
         }
     }
 
     Component.onCompleted: {
         mainController.init()
+        mainWindow.opacity = 1.0
     }
 
     //可能是qmltype信息不全，有M16警告，这里屏蔽下

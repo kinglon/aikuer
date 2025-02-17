@@ -17,6 +17,9 @@ WindowBase {
     title: "Choose Avatar"
     flags: Qt.Dialog | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
+    // 当使用系统标题栏的时候，窗口显示的时候先白屏，再显示QML的内容，体验不好，所以先不显示，加载后再显示
+    opacity: 0
+
     property var mainController: null
 
     signal confirmClick()
@@ -126,6 +129,20 @@ WindowBase {
             onClicked: {
                 chooseAvatarWindow.close()
             }
+        }
+    }
+
+    Component.onCompleted: {
+        timer.start()
+    }
+
+    Timer {
+        id: timer
+        interval: 100 // Timer interval in milliseconds
+        running: false // Start the timer immediately
+
+        onTriggered: {
+            chooseAvatarWindow.opacity = 1.0
         }
     }
 }
