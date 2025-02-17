@@ -1,6 +1,7 @@
 ﻿#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QFont>
+#include <QQmlContext>
 #include "../Utility/LogUtil.h"
 #include "../Utility/DumpUtil.h"
 #include "../Utility/ImPath.h"
@@ -76,10 +77,13 @@ int main(int argc, char *argv[])
     QFont defaultFont("Arial");
     app.setFont(defaultFont);
 
+    MainController* controller = new MainController();
     MemoryImageProvider memoryImageProvider;
+    memoryImageProvider.setMainController(controller);
 
     QQmlApplicationEngine engine;
     engine.addImageProvider("memory", &memoryImageProvider);
+    engine.rootContext()->setContextProperty("cppMainController", controller);
     const QUrl url(QStringLiteral("qrc:/content/qml/MainWindow.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
@@ -88,18 +92,15 @@ int main(int argc, char *argv[])
     }, Qt::QueuedConnection);
     engine.load(url);
 
-    MainController controller;    
     if (argc < 2)
     {
         qCritical("miss the launch param");
     }
     else
     {
-        controller.setLaunchParam(argv[1]);
-        controller.run();
+        controller->setLaunchParam(argv[1]);
+        controller->run();
     }
-
-    memoryImageProvider.setMainController(&controller);
 
     return app.exec();
 }

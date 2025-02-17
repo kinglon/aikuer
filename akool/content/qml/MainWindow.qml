@@ -5,7 +5,7 @@ import QtQuick.Window 2.15
 
 WindowBase {
     id: mainWindow
-    width: 834
+    width: 805
     height: 650
     backgroundColor: "#0B0B0D"
 

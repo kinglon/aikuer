@@ -28,7 +28,6 @@ void MainController::setLaunchParam(const QString& launchParam)
 
     QUrlQuery query(qUrl);
     SettingManager::getInstance()->m_loginToken = query.queryItemValue("token");
-    m_selectAvatarId = query.queryItemValue("avatar_id");
 }
 
 void MainController::run()
@@ -39,10 +38,6 @@ void MainController::run()
         return;
     }
 
-    connect(&m_avatarController, &AvatarController::avatarLocalLoadCompletely, [this](QVector<Avatar> avatars) {
-        QString jsonString = avatarListToJsonString(avatars);
-        emit hasNewAvatar(jsonString);
-    });
     connect(&m_avatarController, &AvatarController::avatarDownloadCompletely, [this](Avatar avatar) {
         QVector<Avatar> avatars;
         avatars.append(avatar);
@@ -51,9 +46,9 @@ void MainController::run()
     });
     m_avatarController.run();
 
-    m_ipcWorder.setKey(IPC_KEY);
-    connect(&m_ipcWorder, &IpcWorker::ipcDataArrive, this, &MainController::onIpcDataArrive);
-    m_ipcWorder.start();
+    m_ipcWorker.setKey(IPC_KEY);
+    connect(&m_ipcWorker, &IpcWorker::ipcDataArrive, this, &MainController::onIpcDataArrive);
+    m_ipcWorker.start();
 }
 
 QString MainController::avatarListToJsonString(const QVector<Avatar>& avatars)
@@ -88,7 +83,17 @@ QImage* MainController::getPlayerImage()
 
 void MainController::beginChat()
 {
-    if (m_selectAvatarId.isEmpty())
+    QString avatarForService;
+    QVector<Avatar> avatars = m_avatarController.getAvatars();
+    for (const auto& avatar : avatars)
+    {
+        if (avatar.m_avatarId == m_selectAvatarId)
+        {
+            avatarForService = avatar.m_avatarIdForService;
+            break;
+        }
+    }
+    if (avatarForService.isEmpty())
     {
         qCritical("avatar is not selected");
         return;
@@ -97,7 +102,7 @@ void MainController::beginChat()
     if (m_meetingController == nullptr)
     {
         m_meetingController = new MeetingController(this);
-        m_meetingController->setAvatarId(m_selectAvatarId);
+        m_meetingController->setAvatarId(avatarForService);
         connect(m_meetingController, &MeetingController::runFinish, [this] {
             m_meetingController->deleteLater();
             m_meetingController = nullptr;
@@ -106,7 +111,7 @@ void MainController::beginChat()
     }
     else
     {
-        m_meetingController->setAvatarId(m_selectAvatarId);
+        m_meetingController->setAvatarId(avatarForService);
     }
 }
 

@@ -9,7 +9,11 @@
 class Avatar
 {
 public:
+    // avatar id，自己分配，唯一标志
     QString m_avatarId;
+
+    // avatar id，服务端用的
+    QString m_avatarIdForService;
 
     QString m_avatarUrl;
 
@@ -19,7 +23,7 @@ public:
 public:
     bool isValid() const
     {
-        if (m_avatarId.isEmpty() || m_avatarUrl.isEmpty())
+        if (m_avatarIdForService.isEmpty() || m_avatarUrl.isEmpty())
         {
             return false;
         }
@@ -48,9 +52,6 @@ public:
 
 signals:
     void runFinish();
-
-    // 本地缓存加载的avatar
-    void avatarLocalLoadCompletely(QVector<Avatar> avatars);
 
     void avatarDownloadCompletely(Avatar avatar);
 
@@ -82,6 +83,9 @@ private:
 
     // 下一个下载的索引
     int m_nextAvatarIndex = 0;
+
+    // 下一个avatar id，唯一标志
+    int m_nextAvatarId = 1;
 };
 
 #endif // AVATARCONTROLLER_H

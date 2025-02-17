@@ -13,7 +13,6 @@ class MainController : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
-    QML_SINGLETON
 
 public:
     explicit MainController(QObject *parent = nullptr);
@@ -59,7 +58,7 @@ private:
 
     MeetingController* m_meetingController = nullptr;
 
-    IpcWorker m_ipcWorder;
+    IpcWorker m_ipcWorker;
 };
 
 #endif // MAINCONTROLLER_H

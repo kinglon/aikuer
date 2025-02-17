@@ -113,6 +113,7 @@ WindowBase {
 
             onClicked: {
                 chooseAvatarWindow.confirmClick()
+                chooseAvatarWindow.close()
             }
         }
 

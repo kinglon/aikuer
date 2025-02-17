@@ -31,9 +31,9 @@ QML_IMPORT_PATH =
 # Additional import path used to resolve QML modules just for Qt Quick Designer
 QML_DESIGNER_IMPORT_PATH =
 
-CONFIG += qmltypes
-QML_IMPORT_NAME = akoolqml
-QML_IMPORT_MAJOR_VERSION = 1
+#CONFIG += qmltypes
+#QML_IMPORT_NAME = akoolqml
+#QML_IMPORT_MAJOR_VERSION = 1
 
 RC_ICONS = content/res/logo.ico
 

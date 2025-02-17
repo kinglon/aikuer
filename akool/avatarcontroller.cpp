@@ -50,9 +50,13 @@ QVector<Avatar> AvatarController::getAvatars()
 
 void AvatarController::onMainTimer()
 {
-    if (!m_getAvatarListSuccess && !m_isGettingAvatarList)
+    if (!m_getAvatarListSuccess)
     {
-        getAvatarListFromServer();
+        if (!m_isGettingAvatarList)
+        {
+            getAvatarListFromServer();
+        }
+
         return;
     }
 
@@ -94,12 +98,7 @@ void AvatarController::onHttpResponse(QNetworkReply *reply)
 
     if (m_getAvatarListSuccess)
     {
-        QVector<Avatar> avatars = getAvatars();
-        if (!avatars.isEmpty())
-        {
-            emit avatarLocalLoadCompletely(avatars);
-        }
-
+        m_nextAvatarIndex = 0;
         downloadAvatarImage();
     }
 }
@@ -145,27 +144,25 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
     for (auto avatar : avatar_result)
     {
         QJsonObject avatarJson = avatar.toObject();
-        if (!avatarJson.contains("avatar_id") || !avatarJson.contains("crop_arr") || avatarJson["crop_arr"].toArray().size() == 0)
+        if (!avatarJson.contains("avatar_id") || !avatarJson.contains("thumbnailUrl"))
         {
             continue;
         }
 
         Avatar avata;
-        avata.m_avatarId = avatarJson["avatar_id"].toString();
-        avata.m_avatarUrl = avatarJson["crop_arr"].toArray()[0].toString();
+        avata.m_avatarIdForService = avatarJson["avatar_id"].toString();
+        avata.m_avatarUrl = avatarJson["thumbnailUrl"].toString();
 
         QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;
-        QFile file(localAvatarImagePath);
-        if (file.exists())
-        {
-            avata.m_localImagePath = localAvatarImagePath;
-        }
-
         if (avata.isValid())
         {
+            avata.m_avatarId = QString::number(m_nextAvatarId);
+            m_nextAvatarId++;
             m_avatars.append(avata);
         }
     }
+
+    qInfo("avatar count: %d", m_avatars.size());
 
     return true;
 }
@@ -183,14 +180,16 @@ void AvatarController::downloadAvatarImage()
     }
 
     // 获取下一个待下载索引
-    while (true)
+    for (; m_nextAvatarIndex < m_avatars.size(); m_nextAvatarIndex++)
     {
         if (!m_avatars[m_nextAvatarIndex].isDownloaded())
         {
             break;
         }
-
-        m_nextAvatarIndex = (m_nextAvatarIndex+1) % m_avatars.size();
+    }
+    if (m_nextAvatarIndex >= m_avatars.size())
+    {
+        return;
     }
 
     Avatar avatar = m_avatars[m_nextAvatarIndex];
@@ -204,6 +203,8 @@ void AvatarController::downloadAvatarImage()
             [this, avatarId, localAvatarImagePath, fileDownloader](bool ok) {
         if (ok)
         {
+            qInfo("successful to download avatar for %s", avatarId.toStdString().c_str());
+
             for (auto& avatar : m_avatars)
             {
                 if (avatar.m_avatarId == avatarId)
@@ -213,12 +214,19 @@ void AvatarController::downloadAvatarImage()
                     break;
                 }
             }
-
-            downloadAvatarImage();
         }
+        else
+        {
+            qInfo("failed to download avatar for %s", avatarId.toStdString().c_str());
+        }
+
+        m_nextAvatarIndex++;
+        downloadAvatarImage();
+
         fileDownloader->deleteLater();
     });
 
+    qInfo("avatar download url: %s", avatar.m_avatarUrl.toStdString().c_str());
     if (!fileDownloader->run())
     {
         fileDownloader->deleteLater();

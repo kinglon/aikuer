@@ -1,6 +1,5 @@
 ﻿import QtQml 2.15
 import QtQuick 2.15
-import akoolqml 1.0
 
 QtObject {
     // avatar model
@@ -9,14 +8,14 @@ QtObject {
     signal showQmlWindow(string name)
 
     function init() {
-        MainController.hasNewAvatar.connect(addAvatars)
-        MainController.showWindow.connect(showQmlWindow)
+        cppMainController.hasNewAvatar.connect(addAvatars)
+        cppMainController.showWindow.connect(showQmlWindow)
 
         // 添加New Avatar按钮
         avatarModels.append({"type": 1, "avatarId": "", "avatarImage": "", "isSelect": false})
 
         // 添加Avatar
-        var avatarString = MainController.getAvatars()
+        var avatarString = cppMainController.getAvatars()
         addAvatars(avatarString)
     }
 
@@ -26,30 +25,30 @@ QtObject {
             avatarModels.append({"type": 2, "avatarId": avatars[i]["id"], "avatarImage": avatars[i]["imagePath"], "isSelect": false})
         }
 
-        var selAvatarId = MainController.getSelAvatarId()
+        var selAvatarId = cppMainController.getSelAvatarId()
         setSelectAvatar(selAvatarId)
     }
 
     function setSelectAvatar(avatarId) {
-        for (var j=1; j<avatarModels.length; j++)
+        for (var j=1; j<avatarModels.count; j++)
         {
-            if (avatarModels[j]["avatarId"] === selAvatarId)
+            if (avatarModels.get(j)["avatarId"] === selAvatarId)
             {
-                avatarModels[j]["isSelect"] = true
+                avatarModels.setProperty(j, "isSelect", true);
             }
             else
             {
-                avatarModels[j]["isSelect"] = false
+                avatarModels.setProperty(j, "isSelect", false);
             }
         }
-        MainController.setSelAvatarId(avatarId)
+        cppMainController.setSelAvatarId(avatarId)
     }
 
     function beginChat() {
-        MainController.beginChat()
+        cppMainController.beginChat()
     }
 
     function quitApp() {
-        MainController.quitApp()
+        cppMainController.quitApp()
     }
 }

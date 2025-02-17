@@ -87,6 +87,7 @@ void MeetingController::createSession()
     bodyJson["scene_mode"] = "meeting";
     m_networkAccessManager.post(request, QJsonDocument(bodyJson).toJson());
 
+    qInfo("send the request of creating session");
     m_currentState = MEETING_STATE_CREATE_SESSION;
     m_creatingSession = true;
 }
@@ -244,7 +245,7 @@ void MeetingController::onJoinChannelSuccess(const char* channel, uid_t uid, int
 void MeetingController::onError(int err, const char* msg)
 {
     (void)err;
-    qCritical("agora sdk has error: %s", msg);
+    qCritical("agora sdk has error: %d, msg: %s", err, msg);
 }
 
 bool MeetingController::initAgoraSdk(QString appId)
