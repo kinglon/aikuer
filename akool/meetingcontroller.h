@@ -67,6 +67,8 @@ private:
 
     bool joinChannel(const QString& appId, const QString& token, const QString& channel);
 
+    void leaveChannel();
+
 private:
     QMutex m_mutex;
 

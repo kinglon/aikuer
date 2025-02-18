@@ -129,16 +129,7 @@ void MainController::quitApp()
         m_meetingController->requestStop();
     }
 
-    QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, [this, timer] {
-        if (m_meetingController == nullptr)
-        {
-            timer->stop();
-            CDumpUtil::Enable(false);
-            QCoreApplication::exit(0);
-        }
-    });
-    timer->start(100);
+    CDumpUtil::Enable(false);
 }
 
 void MainController::onIpcDataArrive(QString data)

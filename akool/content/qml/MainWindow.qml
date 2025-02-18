@@ -7,6 +7,8 @@ WindowBase {
     id: mainWindow
     width: 805
     height: 650
+    minimumWidth: 805
+    minimumHeight: 650
     backgroundColor: "#0B0B0D"
 
     // 当使用系统标题栏的时候，窗口显示的时候先白屏，再显示QML的内容，体验不好，所以先不显示，加载后再显示
@@ -72,6 +74,7 @@ WindowBase {
                 fillMode: Image.PreserveAspectCrop
 
                 Timer {
+                    id: videoPlayerTimer
                     interval: 60 // Timer interval in milliseconds
                     running: true // Start the timer immediately
                     repeat: true // Repeat the timer indefinitely
@@ -259,7 +262,7 @@ WindowBase {
     //可能是qmltype信息不全，有M16警告，这里屏蔽下
     //@disable-check M16
     onClosing: function(closeEvent) {
-        closeEvent.accepted = false
+        videoPlayerTimer.stop();
         mainController.quitApp();
     }
 

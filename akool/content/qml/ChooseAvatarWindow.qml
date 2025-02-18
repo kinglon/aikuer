@@ -6,10 +6,10 @@ WindowBase {
     id: chooseAvatarWindow
     width: 480
     height: 480
-    maximumHeight: height
-    maximumWidth: width
-    minimumHeight: height
-    minimumWidth: width
+    maximumHeight: 480
+    maximumWidth: 480
+    minimumHeight: 480
+    minimumWidth: 480
     backgroundColor: "#131317"
     hasMaxButton: false
     hasMinButton: false

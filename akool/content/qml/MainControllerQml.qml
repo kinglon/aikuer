@@ -32,7 +32,7 @@ QtObject {
     function setSelectAvatar(avatarId) {
         for (var j=1; j<avatarModels.count; j++)
         {
-            if (avatarModels.get(j)["avatarId"] === selAvatarId)
+            if (avatarModels.get(j)["avatarId"] === avatarId)
             {
                 avatarModels.setProperty(j, "isSelect", true);
             }

@@ -66,10 +66,9 @@ void MeetingController::requestStop()
     }
 
     m_requestStop = true;
+    leaveChannel();
     unInitAgoraSdk();
-    QTimer::singleShot(500, [this](){
-        emit runFinish();
-    });
+    emit runFinish();
 }
 
 void MeetingController::createSession()
@@ -354,7 +353,7 @@ QImage* MeetingController::popImage()
     return image;
 }
 
-void MeetingController::restartMeeting()
+void MeetingController::leaveChannel()
 {
     if (m_currentState > MEETING_STATE_CREATE_SESSION)
     {
@@ -365,6 +364,11 @@ void MeetingController::restartMeeting()
     }
 
     endSession();
+}
+
+void MeetingController::restartMeeting()
+{
+    leaveChannel();
 
     m_creatingSession = false;
     m_createSessionSuccess = false;
