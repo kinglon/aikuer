@@ -141,6 +141,10 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
     if (!root.contains("code"))
     {
         qCritical("failed to parse the json data, code field is missing");
+        if (root.contains("msg"))
+        {
+            qCritical("msg: %s", root["msg"].toString().toStdString().c_str());
+        }
         return false;
     }
 

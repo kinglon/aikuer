@@ -249,7 +249,9 @@ WindowBase {
         onShowQmlWindow: function(name) {
             if (name === "main")
             {                
-                mainWindow.raise();
+                mainWindow.show()
+                mainWindow.raise()
+                mainWindow.requestActivate()
             }
         }
     }

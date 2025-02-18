@@ -40,8 +40,8 @@ void registerAppScheme(bool isInstall)
     {
         HKEY hKey;
         LPCWSTR defaultValue = L"URL:akool";
-        std::wstring mainFilePath = getSoftInstallPath() + L"main.exe";
-        std::wstring command = std::wstring(L"\"") + mainFilePath + L"\" --open-url=\"%1\"";
+        std::wstring mainFilePath = getSoftInstallPath() + L"akool.exe";
+        std::wstring command = std::wstring(L"\"") + mainFilePath + L"\" \"%1\"";
         LPCWSTR commandValue = command.c_str();
         if (RegCreateKeyEx(HKEY_CLASSES_ROOT, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL) == ERROR_SUCCESS)
         {
