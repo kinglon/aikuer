@@ -71,7 +71,7 @@ WindowBase {
             Image {
                 id: videoPlayer
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
+                fillMode: Image.PreserveAspectFit
 
                 Timer {
                     id: videoPlayerTimer

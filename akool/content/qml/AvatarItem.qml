@@ -1,5 +1,6 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtGraphicalEffects 1.15
 
 Item {
     property string avatarId
@@ -33,9 +34,23 @@ Item {
     }
 
     Image {
+        id: avatarImageId
         anchors.fill: parent
         source: avatarImage
-        fillMode: Image.PreserveAspectFit
+        fillMode: Image.PreserveAspectCrop
+        visible: false
+    }
+
+    Rectangle {
+        id: mask
+        anchors.fill: parent
+        radius: borderRadius
+    }
+
+    OpacityMask {
+        anchors.fill: parent
+        source: avatarImageId
+        maskSource: mask
     }
 
     Rectangle {

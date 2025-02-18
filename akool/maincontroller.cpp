@@ -28,6 +28,15 @@ void MainController::setLaunchParam(const QString& launchParam)
 
     QUrlQuery query(qUrl);
     SettingManager::getInstance()->m_loginToken = query.queryItemValue("token");
+    QString avatarId = query.queryItemValue("avatar_id");
+    if (!SettingManager::getInstance()->m_loginToken.isEmpty() && !avatarId.isEmpty())
+    {
+        m_meetingController.setAvatarId(avatarId);
+        if (!m_meetingController.isRun())
+        {
+            m_meetingController.run();
+        }
+    }
 }
 
 void MainController::run()

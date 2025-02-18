@@ -64,7 +64,7 @@ private:
 
     void restartMeeting();
 
-    bool joinChannel(const QString& appId, const QString& token, const QString& channel);
+    bool joinChannel(const QString& appId, const QString& token, const QString& channel, int uid);
 
     void leaveChannel();
 

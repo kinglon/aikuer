@@ -160,21 +160,23 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
     m_meetingSessionId = root["data"].toObject()["_id"].toString();
 
     QJsonObject credentialsJson = root["data"].toObject()["credentials"].toObject();
+    int uid = credentialsJson["agora_uid"].toInt();
     QString appId = credentialsJson["agora_app_id"].toString();
     QString token = credentialsJson["agora_token"].toString();
     QString channel = credentialsJson["agora_channel"].toString();
 
+    qInfo("agora uid is %d", uid);
     qInfo("agora app id is %s", appId.toStdString().c_str());
     qInfo("agora token is %s", token.toStdString().c_str());
     qInfo("agora channel is %s", channel.toStdString().c_str());
 
     m_currentState = MEETING_STATE_JOIN_MEETING;
-    joinChannel(appId, token, channel);
+    joinChannel(appId, token, channel, uid);
 
     return true;
 }
 
-bool MeetingController::joinChannel(const QString& appId, const QString& token, const QString& channel)
+bool MeetingController::joinChannel(const QString& appId, const QString& token, const QString& channel, int uid)
 {
     if (!initAgoraSdk(appId))
     {
@@ -188,7 +190,7 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     options.autoSubscribeVideo = true;
     int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                              channel.toStdString().c_str(),
-                             100010, options);
+                             uid, options);
     if (ret != 0)
     {
         qCritical("failed to call joinChannel, error: %d", ret);

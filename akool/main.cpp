@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
     originalHandler = qInstallMessageHandler(logToFile);
 
     qputenv("QT_FONT_DPI", "100");
+    //qputenv("QSG_INFO", "1");
 
     QGuiApplication app(argc, argv);
 
