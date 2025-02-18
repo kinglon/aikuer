@@ -53,7 +53,7 @@ public:
 signals:
     void runFinish();
 
-    void avatarDownloadCompletely(Avatar avatar);
+    void avatarDownloadCompletely(const QVector<Avatar>& avatars);
 
 protected:
     virtual void onHttpResponse(QNetworkReply *reply) override;
@@ -83,9 +83,6 @@ private:
 
     // 下一个下载的索引
     int m_nextAvatarIndex = 0;
-
-    // 下一个avatar id，唯一标志
-    int m_nextAvatarId = 1;
 };
 
 #endif // AVATARCONTROLLER_H

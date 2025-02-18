@@ -163,6 +163,9 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
     QString appId = credentialsJson["agora_app_id"].toString();
     QString token = credentialsJson["agora_token"].toString();
     QString channel = credentialsJson["agora_channel"].toString();
+
+    qInfo("agora app id is %s", appId.toStdString().c_str());
+    qInfo("agora token is %s", token.toStdString().c_str());
     qInfo("agora channel is %s", channel.toStdString().c_str());
 
     m_currentState = MEETING_STATE_JOIN_MEETING;

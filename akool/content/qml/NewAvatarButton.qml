@@ -59,6 +59,7 @@ Rectangle {
 
         onClicked: {
             newAvatarClick()
+            Qt.openUrlExternally("https://akool.com/apps/streaming-avatar/edit")
         }
     }
 }

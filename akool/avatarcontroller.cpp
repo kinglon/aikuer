@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QTimer>
+#include <QFileInfo>
 #include "../Utility/ImPath.h"
 #include "filedownloader.h"
 
@@ -153,16 +154,35 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
         avata.m_avatarIdForService = avatarJson["avatar_id"].toString();
         avata.m_avatarUrl = avatarJson["thumbnailUrl"].toString();
 
-        QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;
+        QUrl qUrl(avata.m_avatarUrl);
+        QString path = qUrl.path(); // Get the path part of the URL
+        QFileInfo fileInfo(path);
+        avata.m_avatarId = avata.m_avatarIdForService + "_" + fileInfo.fileName();
         if (avata.isValid())
-        {
-            avata.m_avatarId = QString::number(m_nextAvatarId);
-            m_nextAvatarId++;
+        {            
+            QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;
+            if (QFile::exists(localAvatarImagePath))
+            {
+                avata.m_localImagePath = localAvatarImagePath;
+            }
             m_avatars.append(avata);
+        }
+    }    
+
+    QVector<Avatar> localAvatars;
+    for (const auto& avatar : m_avatars)
+    {
+        if (avatar.isDownloaded())
+        {
+            localAvatars.append(avatar);
         }
     }
 
-    qInfo("avatar count: %d", m_avatars.size());
+    qInfo("avatar total count: %d, local cache count: %d", m_avatars.size(), localAvatars.size());
+    if (!localAvatars.empty())
+    {
+        emit avatarDownloadCompletely(localAvatars);
+    }
 
     return true;
 }
@@ -210,7 +230,9 @@ void AvatarController::downloadAvatarImage()
                 if (avatar.m_avatarId == avatarId)
                 {
                     avatar.m_localImagePath = localAvatarImagePath;
-                    emit avatarDownloadCompletely(avatar);
+                    QVector<Avatar> avatars;
+                    avatars.append(avatar);
+                    emit avatarDownloadCompletely(avatars);
                     break;
                 }
             }
