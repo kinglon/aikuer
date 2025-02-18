@@ -73,12 +73,7 @@ QString MainController::getAvatars()
 
 QImage* MainController::getPlayerImage()
 {
-    if (m_meetingController)
-    {
-        return m_meetingController->popImage();
-    }
-
-    return nullptr;
+    return m_meetingController.popImage();
 }
 
 void MainController::beginChat()
@@ -99,19 +94,10 @@ void MainController::beginChat()
         return;
     }
 
-    if (m_meetingController == nullptr)
+    m_meetingController.setAvatarId(avatarForService);
+    if (!m_meetingController.isRun())
     {
-        m_meetingController = new MeetingController(this);
-        m_meetingController->setAvatarId(avatarForService);
-        connect(m_meetingController, &MeetingController::runFinish, [this] {
-            m_meetingController->deleteLater();
-            m_meetingController = nullptr;
-        });
-        m_meetingController->run();
-    }
-    else
-    {
-        m_meetingController->setAvatarId(avatarForService);
+        m_meetingController.run();
     }
 }
 
@@ -124,12 +110,10 @@ void MainController::quitApp()
     }
     first = false;
 
-    if (m_meetingController)
+    if (m_meetingController.isRun())
     {
-        m_meetingController->requestStop();
+        m_meetingController.requestStop();
     }
-
-    CDumpUtil::Enable(false);
 }
 
 void MainController::onIpcDataArrive(QString data)

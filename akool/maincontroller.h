@@ -56,7 +56,7 @@ private:
 
     AvatarController m_avatarController;
 
-    MeetingController* m_meetingController = nullptr;
+    MeetingController m_meetingController;
 
     IpcWorker m_ipcWorker;
 };

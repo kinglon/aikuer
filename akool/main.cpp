@@ -81,16 +81,16 @@ int main(int argc, char *argv[])
     MemoryImageProvider memoryImageProvider;
     memoryImageProvider.setMainController(controller);
 
-    QQmlApplicationEngine engine;
-    engine.addImageProvider("memory", &memoryImageProvider);
-    engine.rootContext()->setContextProperty("cppMainController", controller);
+    QQmlApplicationEngine* engine = new QQmlApplicationEngine();
+    engine->addImageProvider("memory", &memoryImageProvider);
+    engine->rootContext()->setContextProperty("cppMainController", controller);
     const QUrl url(QStringLiteral("qrc:/content/qml/MainWindow.qml"));
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+    QObject::connect(engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
-    engine.load(url);
+    engine->load(url);
 
     if (argc < 2)
     {

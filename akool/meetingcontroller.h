@@ -24,6 +24,8 @@ public:
 public:    
     void run();
 
+    bool isRun() { return m_isRunning; }
+
     void setAvatarId(const QString& avatarId);
 
     void requestStop();
@@ -45,9 +47,6 @@ protected:
     virtual bool onMediaPlayerVideoFrame(VideoFrame& , int ) override { return true; }
     virtual bool onPreEncodeVideoFrame(agora::rtc::VIDEO_SOURCE_TYPE , VideoFrame& ) override { return true; }
     virtual bool onCaptureVideoFrame(agora::rtc::VIDEO_SOURCE_TYPE , VideoFrame& ) override { return true; }
-
-signals:
-    void runFinish();
 
 private slots:
     void onMainTimer();
@@ -71,6 +70,8 @@ private:
 
 private:
     QMutex m_mutex;
+
+    bool m_isRunning = false;
 
     int m_currentState = MEETING_STATE_INIT;
 

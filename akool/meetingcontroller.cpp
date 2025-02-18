@@ -20,9 +20,10 @@ void MeetingController::run()
     if (m_avatarId.isEmpty())
     {
         qCritical("avatar id is empty");
-        emit runFinish();
         return;
     }
+
+    m_isRunning = true;
 
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MeetingController::onMainTimer);
@@ -68,7 +69,6 @@ void MeetingController::requestStop()
     m_requestStop = true;
     leaveChannel();
     unInitAgoraSdk();
-    emit runFinish();
 }
 
 void MeetingController::createSession()
