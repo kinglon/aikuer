@@ -23,7 +23,7 @@ public:
 public:
     bool isValid() const
     {
-        if (m_avatarIdForService.isEmpty() || m_avatarUrl.isEmpty())
+        if (m_avatarId.isEmpty() || m_avatarIdForService.isEmpty())
         {
             return false;
         }

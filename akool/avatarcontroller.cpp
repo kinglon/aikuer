@@ -145,19 +145,19 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
     for (auto avatar : avatar_result)
     {
         QJsonObject avatarJson = avatar.toObject();
-        if (!avatarJson.contains("avatar_id") || !avatarJson.contains("thumbnailUrl"))
+        if (!avatarJson.contains("_id") || !avatarJson.contains("avatar_id") || !avatarJson.contains("thumbnailUrl"))
         {
             continue;
         }
 
         Avatar avata;
+        avata.m_avatarId = avatarJson["_id"].toString();
         avata.m_avatarIdForService = avatarJson["avatar_id"].toString();
         avata.m_avatarUrl = avatarJson["thumbnailUrl"].toString();
 
         QUrl qUrl(avata.m_avatarUrl);
         QString path = qUrl.path(); // Get the path part of the URL
         QFileInfo fileInfo(path);
-        avata.m_avatarId = avata.m_avatarIdForService + "_" + fileInfo.fileName();
         if (avata.isValid())
         {            
             QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;

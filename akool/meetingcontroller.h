@@ -5,6 +5,7 @@
 #include <IAgoraRtcEngine.h>
 #include <IAgoraMediaEngine.h>
 #include <QMutex>
+#include "avatarcontroller.h"
 
 using namespace agora;
 using namespace agora::rtc;
@@ -26,7 +27,7 @@ public:
 
     bool isRun() { return m_isRunning; }
 
-    void setAvatarId(const QString& avatarId);
+    void setAvatar(const Avatar& avatar);
 
     void requestStop();
 
@@ -83,7 +84,7 @@ private:
 
     bool m_requestStop = false;
 
-    QString m_avatarId;
+    Avatar m_avatar;
 
     bool m_creatingSession = false;
     bool m_createSessionSuccess = false;

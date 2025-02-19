@@ -31,7 +31,10 @@ void MainController::setLaunchParam(const QString& launchParam)
     QString avatarId = query.queryItemValue("avatar_id");
     if (!SettingManager::getInstance()->m_loginToken.isEmpty() && !avatarId.isEmpty())
     {
-        m_meetingController.setAvatarId(avatarId);
+        Avatar avatar;
+        avatar.m_avatarId = "Jeric";
+        avatar.m_avatarIdForService = avatarId;
+        m_meetingController.setAvatar(avatar);
         if (!m_meetingController.isRun())
         {
             m_meetingController.run();
@@ -85,23 +88,23 @@ QImage* MainController::getPlayerImage()
 
 void MainController::beginChat()
 {
-    QString avatarForService;
+    Avatar selAvatar;
     QVector<Avatar> avatars = m_avatarController.getAvatars();
     for (const auto& avatar : avatars)
     {
         if (avatar.m_avatarId == m_selectAvatarId)
         {
-            avatarForService = avatar.m_avatarIdForService;
+            selAvatar = avatar;
             break;
         }
     }
-    if (avatarForService.isEmpty())
+    if (!selAvatar.isValid())
     {
         qCritical("avatar is not selected");
         return;
     }
 
-    m_meetingController.setAvatarId(avatarForService);
+    m_meetingController.setAvatar(selAvatar);
     if (!m_meetingController.isRun())
     {
         m_meetingController.run();

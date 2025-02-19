@@ -17,7 +17,7 @@ MeetingController::MeetingController(QObject *parent)
 
 void MeetingController::run()
 {
-    if (m_avatarId.isEmpty())
+    if (!m_avatar.isValid())
     {
         qCritical("avatar id is empty");
         return;
@@ -31,14 +31,14 @@ void MeetingController::run()
     onMainTimer();
 }
 
-void MeetingController::setAvatarId(const QString& avatarId)
+void MeetingController::setAvatar(const Avatar& avatar)
 {
-    if (avatarId.isEmpty() || m_avatarId == avatarId)
+    if (!avatar.isValid() || avatar.m_avatarId == m_avatar.m_avatarId)
     {
         return;
     }
 
-    m_avatarId = avatarId;
+    m_avatar = avatar;
     if (m_currentState != MEETING_STATE_INIT)
     {
         restartMeeting();
@@ -82,7 +82,7 @@ void MeetingController::createSession()
     request.setRawHeader("Authorization", bearerToken.toUtf8());
 
     QJsonObject bodyJson;
-    bodyJson["avatar_id"] = m_avatarId;
+    bodyJson["avatar_id"] = m_avatar.m_avatarIdForService;
     bodyJson["scene_mode"] = "meeting";
     m_networkAccessManager.post(request, QJsonDocument(bodyJson).toJson());
 
