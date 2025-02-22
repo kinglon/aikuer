@@ -113,6 +113,11 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
     }
 
     QByteArray data = reply->readAll();
+    if (SettingManager::getInstance()->enableDebugLog())
+    {
+        qDebug("get avatar list response: %s", QString::fromUtf8(data).toStdString().c_str());
+    }
+
     QJsonDocument jsonDocument = QJsonDocument::fromJson(data);
     if (jsonDocument.isNull() || jsonDocument.isEmpty())
     {

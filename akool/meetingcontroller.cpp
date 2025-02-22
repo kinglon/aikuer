@@ -130,6 +130,10 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
     }
 
     QByteArray data = reply->readAll();
+    if (SettingManager::getInstance()->enableDebugLog())
+    {
+        qDebug("create session response: %s", QString::fromUtf8(data).toStdString().c_str());
+    }
     QJsonDocument jsonDocument = QJsonDocument::fromJson(data);
     if (jsonDocument.isNull() || jsonDocument.isEmpty())
     {
@@ -285,7 +289,12 @@ bool MeetingController::initAgoraSdk(QString appId)
 
     m_audioDeviceManager = new AAudioDeviceManager(m_rtcEngine);
 
-    m_rtcEngine->enableAudio();
+    ret = m_rtcEngine->enableAudio();
+    if (ret != 0)
+    {
+        qCritical("failed to call enableAudio, error: %d", ret);
+    }
+
     m_rtcEngine->setAudioProfile(AUDIO_PROFILE_IOT);
     agora::util::AutoPtr<agora::media::IMediaEngine> mediaEngine;
     mediaEngine.queryInterface(m_rtcEngine, AGORA_IID_MEDIA_ENGINE);
