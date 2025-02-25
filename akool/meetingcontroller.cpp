@@ -196,6 +196,8 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     options.clientRoleType = CLIENT_ROLE_BROADCASTER;
     options.autoSubscribeAudio = true;
     options.autoSubscribeVideo = true;
+    options.enableAudioRecordingOrPlayout = true;
+    options.publishMicrophoneTrack = true;
     int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                              channel.toStdString().c_str(),
                              uid, options);
