@@ -24,14 +24,9 @@ public:
 	static std::wstring GetCachePath();
 
     /**
-    @name 获取系统本地临时文件夹路径%AppData%\\Local
+    @name 获取系统本地数据文件夹路径%AppData%\\Local\\AppName\\
     */
-	static std::wstring GetLocalAppDataPath();
-
-	/**
-	@name 获取系统本地临时文件夹路径%AppData%\\Roaming
-	*/
-	static std::wstring GetAppDataRoamingPath();
+    static std::wstring GetLocalAppDataPath();
 
     /**
     @name 获取配置路径，以斜杠结尾
@@ -50,4 +45,7 @@ public:
 
 private:	
 	static std::wstring GetSystemTempPath();
+
+private:
+    static std::wstring m_appName;
 };

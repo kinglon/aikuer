@@ -7,6 +7,8 @@
 
 using namespace std;
 
+std::wstring CImPath::m_appName = L"AkoolCam";
+
 std::wstring CImPath::GetDataPath()
 {
 	static std::wstring wstrPath;
@@ -15,7 +17,7 @@ std::wstring CImPath::GetDataPath()
 		return wstrPath;
 	}
 
-	wstrPath = GetSoftInstallPath() + L"data\\";
+    wstrPath = GetLocalAppDataPath() + L"data\\";
 	if (!PathFileExists(wstrPath.c_str()))
 	{		
 		CreateDirectory(wstrPath.c_str(), NULL);
@@ -63,26 +65,24 @@ std::wstring CImPath::GetSoftInstallPath()
 
 std::wstring CImPath::GetLocalAppDataPath()
 {
-	TCHAR szPath[MAX_PATH];
+    static std::wstring localAppDataPath;
+    if (!localAppDataPath.empty())
+    {
+        return localAppDataPath;
+    }
 
+	TCHAR szPath[MAX_PATH];
 	if (SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szPath)!=S_OK)
 	{
 		return L"";
 	}
 
-	return std::wstring(szPath) + L"\\";
-}
-
-std::wstring CImPath::GetAppDataRoamingPath()
-{
-	TCHAR szPath[MAX_PATH];
-
-	if (SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath) != S_OK)
-	{
-		return L"";
-	}
-
-	return std::wstring(szPath) + L"\\";
+    localAppDataPath = std::wstring(szPath) + L"\\" + CImPath::m_appName + L"\\";
+    if (!PathFileExists(localAppDataPath.c_str()))
+    {
+        CreateDirectory(localAppDataPath.c_str(), NULL);
+    }
+    return localAppDataPath;
 }
 
 std::wstring CImPath::GetSystemTempPath()
@@ -120,7 +120,7 @@ std::wstring CImPath::GetLogPath()
         return wstrPath;
     }
 
-    wstrPath = GetSoftInstallPath() + L"Log\\";
+    wstrPath = GetLocalAppDataPath() + L"Log\\";
     if (!PathFileExists(wstrPath.c_str()))
     {
         CreateDirectory(wstrPath.c_str(), NULL);
@@ -137,7 +137,7 @@ std::wstring CImPath::GetDumpPath()
         return wstrPath;
     }
 
-    wstrPath = GetSoftInstallPath() + L"dump\\";
+    wstrPath = GetLocalAppDataPath() + L"dump\\";
     if (!PathFileExists(wstrPath.c_str()))
     {
         CreateDirectory(wstrPath.c_str(), NULL);
