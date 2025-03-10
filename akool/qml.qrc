@@ -11,6 +11,8 @@
         <file>content/res/logo.png</file>
         <file>content/res/waiting_play.png</file>
         <file>content/qml/MainControllerQml.qml</file>
+        <file>content/res/close_button.png</file>
+        <file>content/res/icon_success.png</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>

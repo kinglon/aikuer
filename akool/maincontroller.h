@@ -44,6 +44,9 @@ signals:
     // 显示窗口
     void showWindow(QString name);
 
+    // 显示消息
+    void showMessage(QString message);
+
 private slots:
     void onIpcDataArrive(QString data);
 

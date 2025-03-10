@@ -15,6 +15,7 @@ using namespace agora::media;
 #define MEETING_STATE_CREATE_SESSION 2
 #define MEETING_STATE_JOIN_MEETING 3
 #define MEETING_STATE_IN_MEETING 4
+#define MEETING_STATE_JOIN_MEETING_FAILED 10
 
 class MeetingController : public HttpClientBase, public IRtcEngineEventHandler, public IVideoFrameObserver
 {
@@ -33,6 +34,9 @@ public:
 
     // 用完要释放
     QImage* popImage();    
+
+signals:
+    void hasError(QString errorMsg);
 
 protected:
     virtual void onHttpResponse(QNetworkReply *reply) override;

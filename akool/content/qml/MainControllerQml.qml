@@ -7,9 +7,12 @@ QtObject {
 
     signal showQmlWindow(string name)
 
+    signal showMessage(string message)
+
     function init() {
         cppMainController.hasNewAvatar.connect(addAvatars)
         cppMainController.showWindow.connect(showQmlWindow)
+        cppMainController.showMessage.connect(showMessage)
 
         // 添加New Avatar按钮
         avatarModels.append({"type": 1, "avatarId": "", "avatarImage": "", "isSelect": false})

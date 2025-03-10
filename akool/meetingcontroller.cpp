@@ -156,6 +156,12 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
     if (code != 1000)
     {
         qCritical("failed to create session, error is %d", code);
+        if (root.contains("msg"))
+        {
+            qCritical("msg: %s", root["msg"].toString().toStdString().c_str());
+            emit hasError(root["msg"].toString());
+        }
+        m_currentState = MEETING_STATE_JOIN_MEETING_FAILED;
         return false;
     }
 

@@ -56,6 +56,8 @@ void MainController::run()
     });
     m_avatarController.run();
 
+    connect(&m_meetingController, &MeetingController::hasError, this, &MainController::showMessage);
+
     m_ipcWorker.setKey(IPC_KEY);
     connect(&m_ipcWorker, &IpcWorker::ipcDataArrive, this, &MainController::onIpcDataArrive);
     m_ipcWorker.start();
