@@ -227,6 +227,8 @@ void MeetingController::onJoinChannelSuccess(const char* channel, uid_t uid, int
     bool useVirtualMicrophoneSuccess = false;
     if (m_audioDeviceManager)
     {
+        m_audioDeviceManager->get()->followSystemPlaybackDevice(false);
+
         IAudioDeviceCollection *audioPlaybackDevices = (*m_audioDeviceManager)->enumeratePlaybackDevices();
         if (audioPlaybackDevices)
         {
