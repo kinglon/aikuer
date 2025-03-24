@@ -1,4 +1,4 @@
-//
+﻿//
 //  Agora Rtc Engine SDK
 //
 //  Copyright (c) 2018 Agora.io. All rights reserved.
@@ -1681,7 +1681,7 @@ class IRtcEngineEventHandler {
    * The callback occurs once every one second during the playback and reports the current playback progress.
    * @param position Current AudioMixing progress (millisecond).
    */
-  virtual void onAudioMixingPositionChanged(int64_t position) {}
+  virtual void onAudioMixingPositionChanged(int64_t)  {}
 
   /** Occurs when the audio mixing file playback finishes.
    @deprecated This method is deprecated, use onAudioMixingStateChanged instead.
@@ -1698,7 +1698,7 @@ class IRtcEngineEventHandler {
    *
    * @param soundId The audio effect ID. The ID of each audio effect file is unique.
    */
-  virtual void onAudioEffectFinished(int soundId) {}
+  virtual void onAudioEffectFinished(int) {}
 
   /** Occurs when the video device state changes.
 
@@ -1859,7 +1859,7 @@ class IRtcEngineEventHandler {
    * @param height The new height (pixels) of the video.
    * @param rotation The rotation information of the video.
    */
-  virtual void onVideoSizeChanged(VIDEO_SOURCE_TYPE sourceType, uid_t uid, int width, int height, int rotation) {
+  virtual void onVideoSizeChanged(VIDEO_SOURCE_TYPE, uid_t uid, int width, int height, int rotation) {
     (void)uid;
     (void)width;
     (void)height;

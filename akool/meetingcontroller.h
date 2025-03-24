@@ -6,6 +6,7 @@
 #include <IAgoraMediaEngine.h>
 #include <QMutex>
 #include "avatarcontroller.h"
+#include "echoremover.h"
 
 using namespace agora;
 using namespace agora::rtc;
@@ -94,6 +95,10 @@ private:
     bool m_createSessionSuccess = false;
 
     QString m_meetingSessionId;
+
+    EchoRemover m_echoRemover;
+
+    rtc::track_id_t m_audioTrackId = INVALID_TRACK_ID;
 };
 
 #endif // MEETINGCONTROLLER_H

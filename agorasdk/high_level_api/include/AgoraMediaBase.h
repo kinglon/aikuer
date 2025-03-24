@@ -1,4 +1,4 @@
-//  Agora Engine SDK
+﻿//  Agora Engine SDK
 //
 //  Created by Sting Feng in 2017-11.
 //  Copyright (c) 2017 Agora.io. All rights reserved.

@@ -204,6 +204,11 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     options.autoSubscribeVideo = true;
     options.enableAudioRecordingOrPlayout = true;
     options.publishMicrophoneTrack = true;
+    if (m_audioTrackId != INVALID_TRACK_ID)
+    {
+        options.publishCustomAudioTrack = true;
+        options.publishCustomAudioTrackId = m_audioTrackId;
+    }
     int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                              channel.toStdString().c_str(),
                              uid, options);
@@ -315,7 +320,24 @@ bool MeetingController::initAgoraSdk(QString appId)
         {
             qCritical("failed to call registerVideoFrameObserver, error: %d", ret);
         }
-    }
+
+        // 去除扬声器声音
+        agora::rtc::AudioTrackConfig config;
+        m_audioTrackId = mediaEngine->createCustomAudioTrack(agora::rtc::AUDIO_TRACK_EXTERNAL_AEC_REFERENCE, config);
+        if (m_audioTrackId == INVALID_TRACK_ID)
+        {
+            qCritical("failed to call createCustomAudioTrackd");
+        }
+        else
+        {
+            m_echoRemover.setRtcEngine(m_rtcEngine);
+            m_echoRemover.setCustomAudioTrackId(m_audioTrackId);
+            m_echoRemover.setMicrophoneName("Line 2");
+            m_echoRemover.setEnabled(true);
+            m_echoRemover.start();
+        }
+    }    
+
     qInfo("init agora successfully");
     return true;
 }

@@ -14,6 +14,7 @@ SOURCES += \
         ../Utility/LogUtil.cpp \
         ../Utility/httpclientbase.cpp \
         avatarcontroller.cpp \
+        echoremover.cpp \
         filedownloader.cpp \
         ipcworker.cpp \
         main.cpp \
@@ -55,6 +56,7 @@ HEADERS += \
     ../Utility/LogUtil.h \
     ../Utility/httpclientbase.h \
     avatarcontroller.h \
+    echoremover.h \
     filedownloader.h \
     ipcworker.h \
     maincontroller.h \
@@ -65,7 +67,7 @@ HEADERS += \
 
 # ffmpeg
 INCLUDEPATH += ../ffmpeg2/include
-LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg2" -lavdevice -lavformat -lavcodec -lavutil -lswscale
+LIBS += -L"$$_PRO_FILE_PWD_/../ffmpeg2" -lavdevice -lavformat -lavcodec -lavutil -lswscale -lswresample
 
 # vcam
 INCLUDEPATH += ../vcam/include
@@ -74,3 +76,6 @@ LIBS += -L"$$_PRO_FILE_PWD_/../vcam/lib" -ljericcam
 # agora
 INCLUDEPATH += ../agorasdk/high_level_api/include
 LIBS += -L"$$_PRO_FILE_PWD_/../agorasdk" -lagora_rtc_sdk.dll
+
+# windows
+LIBS += -lwinmm
