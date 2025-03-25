@@ -14,11 +14,38 @@ extern "C" {
 #define AUDIO_FRAME_CHANNELS 2
 #define AUDIO_FRAME_SAMPLES_PER_SEC 44100
 
+// Custom log callback function
+void custom_log_callback(void* ptr, int level, const char* fmt, va_list vl)
+{
+    if (level > AV_LOG_ERROR)
+    {
+        return;
+    }
+
+    if (strstr(fmt, "frame dropped"))
+    {
+        return;
+    }
+
+    // Define the maximum log message length
+    constexpr int MAX_LOG_LENGTH = 1024;
+    char log_message[MAX_LOG_LENGTH];
+
+    // Format the log message
+    static int print_prefix = 1;
+    av_log_format_line(ptr, level, fmt, vl, log_message, MAX_LOG_LENGTH, &print_prefix);
+    qDebug(log_message);
+}
 
 EchoRemover::EchoRemover(QObject *parent)
     : QThread{parent}
 {
+    InitializeCriticalSection(&m_cs);
+}
 
+EchoRemover::~EchoRemover()
+{
+    DeleteCriticalSection(&m_cs);
 }
 
 void EchoRemover::run()
@@ -49,7 +76,7 @@ void EchoRemover::run()
     wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 
     HWAVEOUT hWaveOut;
-    MMRESULT mmresult = waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD_PTR)waveOutProc, 0, CALLBACK_FUNCTION);
+    MMRESULT mmresult = waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD_PTR)waveOutProc, (DWORD_PTR)this, CALLBACK_FUNCTION);
     if (mmresult != MMSYSERR_NOERROR)
     {
         qCritical("failed to call waveOutOpen, error:%d", mmresult);
@@ -59,13 +86,16 @@ void EchoRemover::run()
     // 初始化FFmpeg    
     avdevice_register_all();
     avformat_network_init();
+    av_log_set_callback(custom_log_callback); // Set the custom log callback function
 
     // 打开麦克风设备
     AVFormatContext* formatContext = nullptr;
     QString url = QString("audio=%1").arg(m_microphoneName);
     std::string audioDeviceName = url.toStdString().c_str();
     const AVInputFormat* format = av_find_input_format("dshow");
-    int result = avformat_open_input(&formatContext, audioDeviceName.c_str(), format, nullptr);
+    AVDictionary *options = nullptr;
+    av_dict_set(&options, "rw_timeout", "2000000", 0); // 2秒超时
+    int result = avformat_open_input(&formatContext, audioDeviceName.c_str(), format, &options);
     if (result != 0)
     {
         qCritical("failed to call avformat_open_input, error: %d", result);
@@ -127,7 +157,7 @@ void EchoRemover::run()
 
     // 初始化重采样器
     SwrContext* swrContext = swr_alloc();
-    av_opt_set_int(swrContext, "in_channel_count", codecContext->channels, 0);
+    av_opt_set_int(swrContext, "in_channel_count", codecContext->ch_layout.nb_channels, 0);
     av_opt_set_int(swrContext, "out_channel_count", AUDIO_FRAME_CHANNELS, 0); // 输出为立体声
     av_opt_set_int(swrContext, "in_sample_rate", codecContext->sample_rate, 0);
     av_opt_set_int(swrContext, "out_sample_rate", AUDIO_FRAME_SAMPLES_PER_SEC, 0); // 输出采样率为44.1kHz
@@ -146,9 +176,17 @@ void EchoRemover::run()
             continue;
         }
 
+        qDebug("av_read_frame begin");
         result = av_read_frame(formatContext, &packet);
+        qDebug("av_read_frame end");
         if (result < 0)
         {
+            if (result == AVERROR(EAGAIN))
+            {
+                qInfo("not have audio data");
+                continue;
+            }
+
             qCritical("failed to read audio frame, error: %d", result);
             break;
         }
@@ -195,13 +233,30 @@ void EchoRemover::run()
                 mmresult = waveOutPrepareHeader(hWaveOut, waveHdr, sizeof(WAVEHDR));
                 if (mmresult == MMSYSERR_NOERROR)
                 {
+                    qDebug("waveOutWrite begin");
                     mmresult = waveOutWrite(hWaveOut, waveHdr, sizeof(WAVEHDR));
+                    qDebug("waveOutWrite end");
                 }
 
                 if (mmresult != MMSYSERR_NOERROR)
                 {
                     qDebug("failed to call waveOutPrepareHeader or waveOutWrite, error: %d", mmresult);
                 }
+
+                EnterCriticalSection(&m_cs);
+                m_playingWaves.append(waveHdr);
+                if (m_playingWaves.size() >= 50)
+                {
+                    qInfo("the buffer size of playing wave is %d", m_playingWaves.size());
+                }
+                for (auto& pWaveHdr : m_finishPalyWaves)
+                {
+                    waveOutUnprepareHeader(hWaveOut, pWaveHdr, sizeof(WAVEHDR));
+                    delete[] pWaveHdr->lpData;
+                    delete pWaveHdr;
+                }
+                m_finishPalyWaves.clear();
+                LeaveCriticalSection(&m_cs);
 
                 // 释放资源
                 av_freep(&outputBuffer);
@@ -222,13 +277,28 @@ void EchoRemover::run()
 
 void EchoRemover::waveOutProc(HWAVEOUT hWaveOut, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
+    (void)hWaveOut;
     (void)dwParam2;
-    (void)dwInstance;
+    EchoRemover* echoRemover = (EchoRemover*)dwInstance;
     if (uMsg == WOM_DONE)
     {
-        LPWAVEHDR pWaveHdr = (LPWAVEHDR)dwParam1;
-        waveOutUnprepareHeader(hWaveOut, pWaveHdr, sizeof(WAVEHDR));
-        delete[] pWaveHdr->lpData;
-        delete pWaveHdr;
+        LPWAVEHDR currentWave = (LPWAVEHDR)dwParam1;
+        EnterCriticalSection(&echoRemover->m_cs);
+        bool found = false;
+        for (auto& pWaveHdr : echoRemover->m_playingWaves)
+        {
+            if (pWaveHdr == currentWave)
+            {
+                echoRemover->m_finishPalyWaves.append(pWaveHdr);
+                echoRemover->m_playingWaves.removeOne(pWaveHdr);
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            qCritical("failed to find the done wave header");
+        }
+        LeaveCriticalSection(&echoRemover->m_cs);
     }
 }

@@ -22,6 +22,7 @@ class EchoRemover : public QThread
 
 public:
     explicit EchoRemover(QObject *parent = nullptr);
+    ~EchoRemover();
 
 public:
     void setRtcEngine(IRtcEngine* engine) { m_rtcEngine = engine; }
@@ -47,6 +48,15 @@ private:
     rtc::track_id_t m_audioTrackId = INVALID_TRACK_ID;
 
     bool m_enabled = false;
+
+    // 正在播放的声音
+    QVector<LPWAVEHDR> m_playingWaves;
+
+    // 已经播放完的声音
+    QVector<LPWAVEHDR> m_finishPalyWaves;
+
+    // 临界区，同步使用
+    CRITICAL_SECTION m_cs;
 };
 
 #endif // ECHOREMOVER_H
