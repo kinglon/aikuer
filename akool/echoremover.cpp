@@ -3,6 +3,7 @@
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#include <libavdevice/avdevice.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 #include <libavutil/time.h>
@@ -55,13 +56,16 @@ void EchoRemover::run()
         return;
     }
 
-    // 初始化FFmpeg
+    // 初始化FFmpeg    
+    avdevice_register_all();
     avformat_network_init();
 
     // 打开麦克风设备
-    AVFormatContext* formatContext = avformat_alloc_context();
+    AVFormatContext* formatContext = nullptr;
     QString url = QString("audio=%1").arg(m_microphoneName);
-    int result = avformat_open_input(&formatContext, url.toStdString().c_str(), nullptr, nullptr);
+    std::string audioDeviceName = url.toStdString().c_str();
+    const AVInputFormat* format = av_find_input_format("dshow");
+    int result = avformat_open_input(&formatContext, audioDeviceName.c_str(), format, nullptr);
     if (result != 0)
     {
         qCritical("failed to call avformat_open_input, error: %d", result);
@@ -100,7 +104,7 @@ void EchoRemover::run()
 
     // 获取解码器参数
     AVCodecParameters* codecParameters = formatContext->streams[audioStreamIndex]->codecpar;
-    AVCodec* codec = avcodec_find_decoder(codecParameters->codec_id);
+    const AVCodec* codec = avcodec_find_decoder(codecParameters->codec_id);
     if (!codec)
     {
         qCritical("failed to find the decoder of %d", codecParameters->codec_id);
@@ -212,6 +216,8 @@ void EchoRemover::run()
     avcodec_free_context(&codecContext);
     avformat_close_input(&formatContext);
     waveOutClose(hWaveOut);
+
+    qInfo("echo remover finish to run");
 }
 
 void EchoRemover::waveOutProc(HWAVEOUT hWaveOut, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)

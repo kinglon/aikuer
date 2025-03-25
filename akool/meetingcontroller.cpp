@@ -244,7 +244,7 @@ void MeetingController::onJoinChannelSuccess(const char* channel, uid_t uid, int
                 int result = audioPlaybackDevices->getDevice(i, szDeviceName, szDeviceId);
                 if (result == 0)
                 {
-                    qInfo("virtual microphone, name=%s, device id=%s", szDeviceName, szDeviceId);
+                    qInfo("playback device, name=%s, device id=%s", szDeviceName, szDeviceId);
                     if (strstr(szDeviceName, "Line 1"))
                     {
                         if ((*m_audioDeviceManager)->setPlaybackDevice(szDeviceId) == 0)
@@ -332,7 +332,7 @@ bool MeetingController::initAgoraSdk(QString appId)
         {
             m_echoRemover.setRtcEngine(m_rtcEngine);
             m_echoRemover.setCustomAudioTrackId(m_audioTrackId);
-            m_echoRemover.setMicrophoneName("Line 2");
+            m_echoRemover.setMicrophoneName("Line 2 (Virtual Audio Cable)");
             m_echoRemover.setEnabled(true);
             m_echoRemover.start();
         }
