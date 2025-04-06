@@ -13,6 +13,22 @@
         <file>content/qml/MainControllerQml.qml</file>
         <file>content/res/close_button.png</file>
         <file>content/res/icon_success.png</file>
+        <file>content/res/icon_rtt.png</file>
+        <file>content/res/icon_camera.png</file>
+        <file>content/res/icon_livefaceswap.png</file>
+        <file>content/res/icon_avatar.png</file>
+        <file>content/res/icon_language.png</file>
+        <file>content/res/icon_microphone.png</file>
+        <file>content/res/icon_feedback.png</file>
+        <file>content/res/icon_streamavatar.png</file>
+        <file>content/res/icon_duration.png</file>
+        <file>content/res/icon_toast_info.png</file>
+        <file>content/res/icon_camera_disable_big.png</file>
+        <file>content/res/icon_microphone_disable.png</file>
+        <file>content/res/icon_camera_disable.png</file>
+        <file>content/qml/ChooseLanguageWindow.qml</file>
+        <file>content/qml/MyComboBox.qml</file>
+        <file>content/res/icon_arrowdown.png</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>

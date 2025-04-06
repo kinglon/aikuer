@@ -2,6 +2,7 @@
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
+import QtGraphicalEffects 1.15
 
 WindowBase {
     id: mainWindow
@@ -25,8 +26,9 @@ WindowBase {
             Layout.preferredHeight: 96
             color: "transparent"
 
+            // 标签页头部
             Rectangle {
-                width: 277
+                width: 488
                 height: 48
                 color: "#0B0B0D"
                 border.color: "#1AF5F5F7"
@@ -41,37 +43,75 @@ WindowBase {
                     color: "transparent"
 
                     ButtonBase {
+                        id: rttBtn
+                        width: parent.width/3
+                        height: parent.height
+                        text: "Real-time Translation"
+                        borderRadius: height/2
+                        anchors.left: parent.left
+                        icon.source: "qrc:/content/res/icon_rtt.png"
+                        display: AbstractButton.TextBesideIcon
+                        spacing: 6
+                    }
+
+                    ButtonBase {
                         id: streamingAvatarBtn
-                        width: parent.width/2
+                        width: parent.width/3
                         height: parent.height
                         text: "Streaming Avatar"
                         borderRadius: height/2
-                        anchors.left: parent.left
+                        anchors.left: rttBtn.right
+                        isSelected: true
+                        icon.source: "qrc:/content/res/icon_streamavatar.png"
+                        display: AbstractButton.TextBesideIcon
+                        spacing: 6
                     }
 
                     ButtonBase {
                         id: liveFaceSwapBtn
-                        width: parent.width/2
+                        width: parent.width/3
                         height: parent.height
                         text: "Live Face Swap"
                         borderRadius: height/2
                         enabled: false
                         anchors.right: parent.right
+                        icon.source: "qrc:/content/res/icon_livefaceswap.png"
+                        display: AbstractButton.TextBesideIcon
+                        spacing: 6
                     }
+                }
+            }
+
+            // 反馈按钮
+            ButtonBase {
+                id: feedBackButton
+                width: 20
+                height: 20
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                anchors.rightMargin: 28
+                icon.source: "qrc:/content/res/icon_feedback.png"
+                display: AbstractButton.IconOnly
+                borderRadius: 2
+                padding: 0
+
+                onClicked: {
+                    Qt.openUrlExternally("https://akool.com")
                 }
             }
         }
 
-        // 中间图片显示区域
+        // 中间视频区域
         Item {
             id: item1
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            // 中间图片
             Image {
                 id: videoPlayer
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectFit
+                fillMode: Image.PreserveAspectCrop
 
                 Timer {
                     id: videoPlayerTimer
@@ -86,169 +126,299 @@ WindowBase {
                 }
             }
 
-            // Let's chat 按钮
+            // 左上角的剩余时长
             Rectangle {
-                id: letChatArea
-                width: 584
-                height: 68
+                id: durationArea
+                width: 89
+                height: 48
+                anchors.top: parent.top
+                anchors.topMargin: 12
+                anchors.left: parent.left
+                anchors.leftMargin: 12
                 color: "#990A0A11"
-                radius: 12
-                border.width: 1
-                border.color: "#1AF5F5F7"
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 12
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: false
+                radius: height/2
 
-                ButtonBase {
-                    width: 129
-                    height: 48
-                    anchors.centerIn: parent
-                    borderRadius: 12
-                    text: "Let's chat"
-                    bgNormalColor: "#7861FA"
-                    bgHoverColor: bgClickColor
-                    bgClickColor: "#6349F5"
-                    textNormalColor: "#F5F5F7"
+                Image {
+                    id: durationIcon
+                    width: 24
+                    height: 24
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    fillMode: Image.PreserveAspectFit
+                    source: "qrc:/content/res/icon_duration.png"
+                }
 
-                    onClicked: {
-                        letChatArea.visible = false
-                        mainController.beginChat()
-                    }
+                Text {
+                    id: durationText
+                    anchors.left: durationIcon.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "00 : 00"
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    color: "#F5F5F7"
                 }
             }
-        }
 
-        // avatar选择区域
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 153
-            color: "transparent"
+            // 右上角的摄像头显示区域
+            Item {
+                id: cameraDisplayArea
+                width: 280
+                height: 156
+                anchors.top: parent.top
+                anchors.topMargin: 12
+                anchors.right: parent.right
+                anchors.rightMargin: 12
 
-            Rectangle {
-                width: parent.width-80
-                height: parent.height-32
-                anchors.centerIn: parent
-                color: "transparent"
+                property bool enableCamera: false
+                property int borderWidth: 2
+                property int borderRadius: 15
+                property color borderColor: "#59F5F5F7"
 
-                // view all按钮
+                // 摄像头禁用时显示
                 Rectangle {
-                    width: parent.width
-                    height: 27
-                    color: "transparent"
+                    visible: !cameraDisplayArea.enableCamera
+                    anchors.fill: parent
+                    border.color: cameraDisplayArea.borderColor
+                    border.width: cameraDisplayArea.borderWidth
+                    radius: cameraDisplayArea.borderRadius
+                    color: "#0A0A11"
+
+                    Image {
+                        width: 42
+                        height: 43
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: parent.top
+                        anchors.topMargin: 42
+                        source: "qrc:/content/res/icon_camera_disable_big.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
 
                     Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 42
+                        text: "Click allow to access camera"
                         color: "#F5F5F7"
-                        anchors.fill: parent
-                        text: "Choose Avatar"
-                        horizontalAlignment: Text.AlignHCenter
                         font.pixelSize: 16
                         font.weight: Font.Medium
-                        verticalAlignment: Text.AlignTop
-                    }
-
-                    Text {                        
-                        width: 70
-                        height: parent.height
-                        anchors.right: parent.right
-                        text: "View All"
-                        color: "#6349F5"
-                        horizontalAlignment: Text.AlignRight
-                        font.pointSize: 10
-                        verticalAlignment: Text.AlignTop
-
-                        MouseArea {
-                            anchors.fill: parent
-
-                            onClicked: {
-                                var chooseAvatarWindow = chooseAvatarWindowComponent.createObject(mainWindow, {"mainController": mainController})
-                                chooseAvatarWindow.confirmClick.connect(function() {
-                                    letChatArea.visible = true
-                                })
-                            }
-                        }
                     }
                 }
 
-                // avatar列表
-                Rectangle {
-                    property int borderRadius: 8
+                // 摄像头画面显示区域
+                Item {
+                    visible: cameraDisplayArea.enableCamera
+                    anchors.fill: parent
 
-                    id: avatarArea
-                    width: parent.width
-                    height: 94
-                    anchors.bottom: parent.bottom
-                    color: "transparent"
-
-                    // Avatar列表
-                    GridView {
-                        // 头像之间空距
-                        property int space: 8
-
-                        id: avataList
+                    Image {
+                        id: cameraImage
                         anchors.fill: parent
-                        clip: true                        
-                        cellWidth: height+space
-                        cellHeight: height
+                        fillMode: Image.PreserveAspectCrop
 
-                        delegate: Rectangle {
-                            // 1是new avatar按钮, 2是avatar图像
-                            required property int type
-                            required property string avatarId
-                            required property string avatarImage
-                            required property bool isSelect
+                        Timer {
+                            id: cameraImageTimer
+                            interval: 60 // Timer interval in milliseconds
+                            running: cameraDisplayArea.enableCamera // Start the timer immediately
+                            repeat: true // Repeat the timer indefinitely
 
-                            id: avatarItem
-                            width: avataList.cellWidth
-                            height: avataList.cellHeight
-                            color: "transparent"
-
-                            // New Avatar按钮
-                            NewAvatarButton {
-                                id: newAvatarBtn
-                                width: height
-                                height: parent.height
-                                anchors.left: parent.left
-                                borderRadius: avatarArea.borderRadius
-                                visible: avatarItem.type==1
-                            }
-
-                            AvatarItem {
-                                width: height
-                                height: parent.height
-                                anchors.left: parent.left
-                                avatarId: avatarItem.avatarId
-                                avatarImage: avatarItem.avatarImage
-                                borderRadius: avatarArea.borderRadius
-                                isSelect: avatarItem.isSelect
-                                visible: avatarItem.type==2
-
-                                onAvatarClick: {
-                                    mainController.setSelectAvatar(avatarId)
-                                    letChatArea.visible = true
-                                }
+                            onTriggered: {
+                                cameraImage.source = ""
+                                cameraImage.source = "image://memory/cameraImage"
                             }
                         }
+                    }
 
-                        model: mainController.avatarModels
+                    Rectangle {
+                        id: mask
+                        anchors.fill: parent
+                        radius: cameraDisplayArea.borderRadius
+                    }
+
+                    OpacityMask {
+                        anchors.fill: parent
+                        source: cameraImage
+                        maskSource: mask
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        border.width: cameraDisplayArea.borderWidth
+                        border.color: cameraDisplayArea.borderColor
+                        radius: cameraDisplayArea.borderRadius
+                        color: "transparent"
                     }
                 }
             }
-        }
 
-        // 底部操作区域 (这块目前没用，消息先放着)
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 96
+
+            // 工具栏
+            Rectangle {
+                id: toolbarArea
+                width: parent.width-12*2
+                height: 80
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 12
+                color: "#D00A0A11"
+                radius: 10
+
+                // 开始按钮
+                ButtonBase {
+                    id: startBtn
+                    width: 59
+                    height: 36
+                    text: "Start"
+                    anchors.centerIn: parent
+                    borderRadius: 8
+                    bgNormalColor: "#7861FA"
+                    bgClickColor: "#6851E0"
+                    bgHoverColor: bgClickColor
+
+                    onClicked: {
+                        text = "Stop"
+                        bgNormalColor = "#DC4D48"
+                        bgClickColor = "#CC3D38"
+                        bgHoverColor = bgClickColor
+                    }
+                }
+
+                // Streaming Avatar专有
+                Item {
+                    id: saToolbarPanel
+                    anchors.fill: parent
+                    visible: false
+
+                    // 选择Avatar按钮
+                    ButtonBase {
+                        id: selectAvatarBtn
+                        visible: true
+                        width: 72
+                        height: 56
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        text: "Avatar"
+                        borderRadius: 8
+                        icon.source: "qrc:/content/res/icon_avatar.png"
+                        display: AbstractButton.TextUnderIcon
+                        spacing: 6
+
+                        onClicked: {
+                            var chooseAvatarWindow = chooseAvatarWindowComponent.createObject(mainWindow, {"mainController": mainController})
+                            chooseAvatarWindow.confirmClick.connect(function() {
+                                //
+                            })
+                        }
+                    }
+                }
+
+                // Real-time Translation专有
+                Item {
+                    id: rttToolbarPanel
+                    anchors.fill: parent
+                    visible: true
+
+                    // 摄像头开关按钮
+                    ButtonBase {
+                        id: cameraBtn
+                        visible: true
+                        width: 72
+                        height: 56
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        text: "Camera"
+                        textNormalColor: "#DC4D48"
+                        borderRadius: 8
+                        icon.source: "qrc:/content/res/icon_camera_disable.png"
+                        display: AbstractButton.TextUnderIcon
+                        spacing: 6
+
+                        property bool cameraEnable: false
+
+                        onClicked: {
+                            //
+                        }
+
+                        onCameraEnableChanged: {
+                            if (cameraEnable) {
+                                icon.source = "qrc:/content/res/icon_camera.png"
+                                textNormalColor = "#F5F5F7"
+                            } else {
+                                icon.source = "qrc:/content/res/icon_camera_disable.png"
+                                textNormalColor = "#DC4D48"
+                            }
+                        }
+                    }
+
+                    // 麦克风开关按钮
+                    ButtonBase {
+                        id: microPhoneBtn
+                        visible: true
+                        width: 72
+                        height: 56
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: cameraBtn.right
+                        anchors.leftMargin: 12
+                        text: "Mic"
+                        textNormalColor: "#DC4D48"
+                        borderRadius: 8
+                        icon.source: "qrc:/content/res/icon_microphone_disable.png"
+                        display: AbstractButton.TextUnderIcon
+                        spacing: 6
+
+                        property bool microPhoneEnable: false
+
+                        onClicked: {
+                            //
+                        }
+
+                        onMicroPhoneEnableChanged: {
+                            if (microPhoneEnable) {
+                                icon.source = "qrc:/content/res/icon_microphone.png"
+                                textNormalColor = "#F5F5F7"
+                            } else {
+                                icon.source = "qrc:/content/res/icon_microphone_disable.png"
+                                textNormalColor = "#DC4D48"
+                            }
+                        }
+                    }
+
+                    // 选择语言按钮
+                    ButtonBase {
+                        id: selectLanguageBtn
+                        visible: true
+                        width: 120
+                        height: 56
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        text: "Target Language"
+                        borderRadius: 8
+                        icon.source: "qrc:/content/res/icon_language.png"
+                        display: AbstractButton.TextUnderIcon
+                        spacing: 6
+
+                        onClicked: {
+                            var chooseLanguageWindow = chooseLanguageWindowComponent.createObject(mainWindow, {"mainController": mainController})
+                            chooseLanguageWindow.confirmClick.connect(function() {
+                                //
+                            })
+                        }
+                    }
+                }
+            }
 
             // 消息提示框
             Rectangle {
                 id: messageBox
-                color: "#0F973D"
+                color: "#DC4D48"
                 radius: 8
                 width: getFixedWidth() + messageContent.width
                 height: 44
-                anchors.centerIn: parent
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: toolbarArea.top
+                anchors.bottomMargin: 12
                 visible: false
 
                 function getFixedWidth() {
@@ -270,7 +440,7 @@ WindowBase {
                     height: 20
                     anchors.left: parent.left
                     anchors.leftMargin: 13
-                    source: "../res/icon_success.png"
+                    source: "qrc:/content/res/icon_toast_info.png"
                     fillMode: Image.PreserveAspectFit
                 }
 
@@ -352,5 +522,10 @@ WindowBase {
     Component {
         id: chooseAvatarWindowComponent
         ChooseAvatarWindow {}
+    }
+
+    Component {
+        id: chooseLanguageWindowComponent
+        ChooseLanguageWindow {}
     }
 }

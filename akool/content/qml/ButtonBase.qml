@@ -9,37 +9,42 @@ Button {
     font.weight: Font.Medium
     palette.buttonText: textNormalColor
     display: AbstractButton.TextBesideIcon
-    hoverEnabled: true
+    hoverEnabled: true    
 
     // 各状态下的背景颜色
-    property color bgNormalColor: "#27272E"
-    property color bgClickColor: "#373357"
-    property color bgHoverColor: "#373357"
-    property color bgDisableColor: "#27272E"
+    property color bgNormalColor: "transparent"
+    property color bgClickColor: "#24F5F5F7"
+    property color bgHoverColor: "#24F5F5F7"
+    property color bgDisableColor: "transparent"
 
     // 各状态下的字体颜色
     property color textNormalColor: "#F5F5F7"
     property color textDisableColor: "#26F5F5F7"
 
-
+    // 自定义属性
+    property bool isSelected: false
     property color borderColor: "#ffffff"
-    property int borderWidth: 0
+    property int borderWidth: 0 // 默认边框宽度
+    property int disableBorderWidth: 0 // 禁用状态下边框宽度
+    property int normalBorderWidth: 0 // 正常状态下边框宽度
     property int borderRadius: 10
 
-    function updateBackgroundColor() {
+    function updateButtonStatus() {
         if (!enabled) {
             palette.buttonText = textDisableColor
-            solidBackground.color = bgDisableColor            
+            solidBackground.color = bgDisableColor
+            solidBackground.border.width = disableBorderWidth
         } else {
             palette.buttonText = textNormalColor
-            if (down) {
+            if (isSelected || down) {
                 solidBackground.color = bgClickColor
+                solidBackground.border.width = borderWidth
+            } else if (hovered) {
+                solidBackground.color = bgHoverColor
+                solidBackground.border.width = borderWidth
             } else {
-                if (hovered) {
-                    solidBackground.color = bgHoverColor
-                } else {
-                    solidBackground.color = bgNormalColor
-                }
+                solidBackground.color = bgNormalColor
+                solidBackground.border.width = normalBorderWidth
             }
         }
     }
@@ -56,9 +61,11 @@ Button {
         border.color: borderColor
     }
 
-    onDownChanged: { updateBackgroundColor(); }
+    onDownChanged: { updateButtonStatus(); }
 
-    onEnabledChanged: { updateBackgroundColor(); }
+    onEnabledChanged: { updateButtonStatus(); }
 
-    onHoveredChanged: { updateBackgroundColor(); }
+    onHoveredChanged: { updateButtonStatus(); }
+
+    onIsSelectedChanged: { updateButtonStatus(); }
 }

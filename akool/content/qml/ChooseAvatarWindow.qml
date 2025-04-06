@@ -110,6 +110,10 @@ WindowBase {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 36
+            borderColor: "#24F5F5F7"
+            borderWidth: 1
+            borderRadius: 10
+            bgNormalColor: "#7861FA"
 
             onClicked: {
                 chooseAvatarWindow.confirmClick()
@@ -126,6 +130,10 @@ WindowBase {
             anchors.rightMargin: 24
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 36
+            borderColor: "#24F5F5F7"
+            borderWidth: 1
+            normalBorderWidth: 1
+            borderRadius: 10
 
             onClicked: {
                 chooseAvatarWindow.close()
