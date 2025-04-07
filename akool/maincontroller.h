@@ -30,11 +30,22 @@ public:
 public: // QML调用接口
     // 获取所有可用avatars，返回JSON串
     Q_INVOKABLE QString getAvatars();
+    Q_INVOKABLE QString getSelAvatarId();
+    Q_INVOKABLE void setSelAvatarId(QString avatarId);
 
-    Q_INVOKABLE QString getSelAvatarId() { return m_selectAvatarId; }
-    Q_INVOKABLE void setSelAvatarId(QString avatarId) { m_selectAvatarId = avatarId; }
+    Q_INVOKABLE bool switchMeetingMode(int meetingMode);
 
-    Q_INVOKABLE void beginChat();
+    Q_INVOKABLE void enableCamera(bool enable);
+    Q_INVOKABLE void enableMicrophone(bool enable);
+
+    Q_INVOKABLE bool beginChat();
+    Q_INVOKABLE void stopChat();
+
+    Q_INVOKABLE QString getDuration();
+
+    // 获取所有语言，返回JSON串
+    Q_INVOKABLE QString getLanguageList(bool source);
+    Q_INVOKABLE void selectTranslateLanguage(QString sourceLanguageId, QString targetLanguageId);
 
     Q_INVOKABLE void quitApp();
 
@@ -48,6 +59,9 @@ signals:
     // 显示消息
     void showMessage(QString message);
 
+    // 聊天状态变化
+    void chattingStatusChange(bool isChatting);
+
 private slots:
     void onIpcDataArrive(QString data);
 
@@ -55,9 +69,6 @@ private:
     QString avatarListToJsonString(const QVector<Avatar>& avatars);
 
 private:
-    // 选择的avatar id
-    QString m_selectAvatarId;
-
     AvatarController m_avatarController;
 
     TranslateLanguageController m_tlController;

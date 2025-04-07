@@ -329,7 +329,6 @@ WindowBase {
                     // 选择Avatar按钮
                     ButtonBase {
                         id: selectAvatarBtn
-                        visible: true
                         width: 72
                         height: 56
                         anchors.verticalCenter: parent.verticalCenter
@@ -552,6 +551,10 @@ WindowBase {
         onShowMessage: function(message) {
             messageBox.show(message)
         }
+
+        onChattingStatusChange: function(isChatting) {
+            startBtn.isChatting = isChatting
+        }
     }
 
     Component.onCompleted: {
@@ -576,8 +579,12 @@ WindowBase {
     }
 
     function switchMeetingMode(meetingMode) {
+        if (startBtn.isChatting) {
+            return
+        }
+
         if (!mainController.switchMeetingMode(meetingMode)) {
-            return;
+            return
         }
 
         mainWindow.currentMeetingMode = meetingMode

@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QImage>
 #include "virtualcameramanager.h"
+#include "statusmanager.h"
 
 #define URI_CREATE_SESSION "/api/v7/content/liveAvatar/session/create"
 #define URI_END_SESSION "/api/v7/content/liveAvatar/session/close"
@@ -17,12 +18,6 @@ MeetingController::MeetingController(QObject *parent)
 
 void MeetingController::run()
 {
-    if (!m_avatar.isValid())
-    {
-        qCritical("avatar id is empty");
-        return;
-    }
-
     m_isRunning = true;
 
     QTimer* timer = new QTimer(this);
@@ -31,21 +26,13 @@ void MeetingController::run()
     onMainTimer();
 }
 
-void MeetingController::setAvatar(const Avatar& avatar)
+void MeetingController::onMainTimer()
 {
-    if (!avatar.isValid() || avatar.m_avatarId == m_avatar.m_avatarId)
+    if (!m_isChatting)
     {
         return;
     }
 
-    m_avatar = avatar;
-    if (m_currentState != MEETING_STATE_INIT)
-    {
-        restartMeeting();
-    }
-}
-
-void MeetingController::onMainTimer() {
     if (m_currentState == MEETING_STATE_INIT)
     {
         createSession();
@@ -71,6 +58,42 @@ void MeetingController::requestStop()
     unInitAgoraSdk();
 }
 
+void MeetingController::beginChat()
+{
+    restartMeeting();
+    m_isChatting = true;
+}
+
+void MeetingController::stopChat()
+{
+    leaveChannel();
+    m_currentState = MEETING_STATE_INIT;
+    m_isChatting = false;
+}
+
+void MeetingController::enableCamera(bool enable)
+{
+    if (m_rtcEngine && m_currentState == MEETING_STATE_IN_MEETING)
+    {
+        if (enable)
+        {
+            m_rtcEngine->enableVideo();
+        }
+        else
+        {
+            m_rtcEngine->disableVideo();
+        }
+    }
+}
+
+void MeetingController::enableMicrophone(bool enable)
+{
+    if (m_rtcEngine && m_currentState == MEETING_STATE_IN_MEETING)
+    {
+        m_rtcEngine->muteLocalAudioStream(enable);
+    }
+}
+
 void MeetingController::createSession()
 {
     QNetworkRequest request;
@@ -82,8 +105,20 @@ void MeetingController::createSession()
     request.setRawHeader("Authorization", bearerToken.toUtf8());
 
     QJsonObject bodyJson;
-    bodyJson["avatar_id"] = m_avatar.m_avatarIdForService;
-    bodyJson["scene_mode"] = "meeting";
+    if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
+    {
+        bodyJson["avatar_id"] = StatusManager::getInstance()->m_avatarIdForService;
+        bodyJson["scene_mode"] = "meeting";
+    }
+    else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
+    {
+        bodyJson["avatar_id"] = "";
+        bodyJson["scene_mode"] = "translate";
+        bodyJson["voice_id"] = "";
+        bodyJson["source_lang"] = StatusManager::getInstance()->m_sourceLanguageCode;
+        bodyJson["target_lang"] = StatusManager::getInstance()->m_targetLanguageCode;
+        bodyJson["lip_sync"] = false;
+    }
     m_networkAccessManager.post(request, QJsonDocument(bodyJson).toJson());
 
     qInfo("send the request of creating session");
@@ -173,6 +208,10 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
 
     m_meetingSessionId = root["data"].toObject()["_id"].toString();
 
+    int allocateDuration = root["data"].toObject()["allocate_duration"].toInt();
+    qint64 meetingEndTime = GetTickCount64()/1000 + allocateDuration;
+    StatusManager::getInstance()->m_meetingEndTime = meetingEndTime;
+
     QJsonObject credentialsJson = root["data"].toObject()["credentials"].toObject();
     int uid = credentialsJson["agora_uid"].toInt();
     QString appId = credentialsJson["agora_app_id"].toString();
@@ -202,13 +241,39 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     options.clientRoleType = CLIENT_ROLE_BROADCASTER;
     options.autoSubscribeAudio = true;
     options.autoSubscribeVideo = true;
-    options.enableAudioRecordingOrPlayout = true;
-    options.publishMicrophoneTrack = true;
+
+    // 开启麦克风、摄像头
+    if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
+    {
+        m_rtcEngine->disableVideo();
+        options.enableAudioRecordingOrPlayout = true;
+        options.publishMicrophoneTrack = true;
+    }
+    else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
+    {
+        if (StatusManager::getInstance()->m_enableMicrophone)
+        {
+            options.enableAudioRecordingOrPlayout = true;
+            options.publishMicrophoneTrack = true;
+        }
+
+        if (StatusManager::getInstance()->m_enableCamera)
+        {
+            m_rtcEngine->enableVideo();
+        }
+        else
+        {
+            m_rtcEngine->disableVideo();
+        }
+    }
+
+    // 回音消除，把扬声器声音送进去
     if (m_audioTrackId != INVALID_TRACK_ID)
     {
         options.publishCustomAudioTrack = true;
         options.publishCustomAudioTrackId = m_audioTrackId;
     }
+
     int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                              channel.toStdString().c_str(),
                              uid, options);

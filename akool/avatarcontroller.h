@@ -9,7 +9,7 @@
 class Avatar
 {
 public:
-    // avatar id，自己分配，唯一标志
+    // avatar id
     QString m_avatarId;
 
     // avatar id，服务端用的

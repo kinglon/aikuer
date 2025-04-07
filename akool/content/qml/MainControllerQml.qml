@@ -9,10 +9,13 @@ QtObject {
 
     signal showMessage(string message)
 
+    signal chattingStatusChange(bool isChatting)
+
     function init() {
         cppMainController.hasNewAvatar.connect(addAvatars)
         cppMainController.showWindow.connect(showQmlWindow)
         cppMainController.showMessage.connect(showMessage)
+        cppMainController.chattingStatusChange.connect(chattingStatusChange)
 
         // 添加New Avatar按钮
         avatarModels.append({"type": 1, "avatarId": "", "avatarImage": "", "isSelect": false})
@@ -49,51 +52,54 @@ QtObject {
 
     // 切换会议模式 rtt=1 sa=2 lfs=3
     function switchMeetingMode(meetingMode) {
-        // todo by yejinlong
-        return true
+        return cppMainController.switchMeetingMode(meetingMode)
     }
 
     // 获取剩余时长
     function getDuration() {
-        // todo by yejinlong
-        return "00 : 00"
+        return cppMainController.getDuration()
     }
 
     // 摄像头开关
     function enableCamera(enable) {
-        // todo by yejinlong
+        cppMainController.enableCamera(enable)
     }
 
     // 麦克风开关
     function enableMicrophone(enable) {
-        // todo by yejinlong
+        cppMainController.enableMicrophone(enable)
     }
 
     // 开始聊天
     function beginChat() {
-        // todo by yejinlong
         return cppMainController.beginChat()
     }
 
     // 结束聊天
     function stopChat() {
-        // todo by yejinlong
+        cppMainController.stopChat()
     }
 
     // 获取语言
     function getTranslateLanguageList(sourceLanguages, targetLanguages) {
-        // todo by yejinlong
         sourceLanguages.clear()
-        sourceLanguages.append({ tlId: "1", language: "Chinese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: false})
-        sourceLanguages.append({ tlId: "2", language: "Japanese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: true})
+        var languageJsonString = cppMainController.getLanguageList(true);
+        var languages = JSON.parse(sourceLanguageJsonString)
+        for (var i=0; i<languages.length; i++) {
+            sourceLanguages.append(languages[i])
+        }
+
         targetLanguages.clear()
-        targetLanguages.append({ tlId: "3", language: "Chinese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: false})
-        targetLanguages.append({ tlId: "4", language: "Japanese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: true})
+        languageJsonString = cppMainController.getLanguageList(false);
+        languages = JSON.parse(languageJsonString)
+        for (i=0; i<languages.length; i++) {
+            targetLanguages.append(languages[i])
+        }
     }
 
     // 选择语言
     function selectTranslateLanguage(sourceLanguageId, targetLanguageId) {
-        // todo by yejinlong
+        cppMainController.selectTranslateLanguage(sourceLanguageId, targetLanguageId)
     }
 
     // 退出程序

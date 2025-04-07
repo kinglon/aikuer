@@ -25,13 +25,16 @@ public:
     explicit MeetingController(QObject *parent = nullptr);
 
 public:    
-    void run();
-
+    void run();    
+    void requestStop();
     bool isRun() { return m_isRunning; }
 
-    void setAvatar(const Avatar& avatar);
+    void beginChat();
+    void stopChat();
+    bool isChatting() { return m_isChatting; }
 
-    void requestStop();
+    void enableCamera(bool enable);
+    void enableMicrophone(bool enable);
 
     // 用完要释放
     QImage* popImage();    
@@ -87,9 +90,7 @@ private:
 
     AAudioDeviceManager* m_audioDeviceManager = nullptr;
 
-    bool m_requestStop = false;
-
-    Avatar m_avatar;
+    bool m_requestStop = false;    
 
     bool m_creatingSession = false;
     bool m_createSessionSuccess = false;
@@ -99,6 +100,8 @@ private:
     EchoRemover m_echoRemover;
 
     rtc::track_id_t m_audioTrackId = INVALID_TRACK_ID;
+
+    bool m_isChatting = false;
 };
 
 #endif // MEETINGCONTROLLER_H
