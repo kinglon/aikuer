@@ -15,6 +15,9 @@ WindowBase {
     // 当使用系统标题栏的时候，窗口显示的时候先白屏，再显示QML的内容，体验不好，所以先不显示，加载后再显示
     opacity: 0
 
+    // 当前会议模式 rtt=1 sa=2 lfs=3
+    property int currentMeetingMode: 2
+
     ColumnLayout  {
         parent: contentArea
         anchors.fill: parent
@@ -49,9 +52,14 @@ WindowBase {
                         text: "Real-time Translation"
                         borderRadius: height/2
                         anchors.left: parent.left
+                        isSelected: mainWindow.currentMeetingMode==1
                         icon.source: "qrc:/content/res/icon_rtt.png"
                         display: AbstractButton.TextBesideIcon
                         spacing: 6
+
+                        onClicked: {
+                            mainWindow.switchMeetingMode(1)
+                        }
                     }
 
                     ButtonBase {
@@ -61,10 +69,14 @@ WindowBase {
                         text: "Streaming Avatar"
                         borderRadius: height/2
                         anchors.left: rttBtn.right
-                        isSelected: true
+                        isSelected: mainWindow.currentMeetingMode==2
                         icon.source: "qrc:/content/res/icon_streamavatar.png"
                         display: AbstractButton.TextBesideIcon
                         spacing: 6
+
+                        onClicked: {
+                            mainWindow.switchMeetingMode(2)
+                        }
                     }
 
                     ButtonBase {
@@ -75,9 +87,14 @@ WindowBase {
                         borderRadius: height/2
                         enabled: false
                         anchors.right: parent.right
+                        isSelected: mainWindow.currentMeetingMode==3
                         icon.source: "qrc:/content/res/icon_livefaceswap.png"
                         display: AbstractButton.TextBesideIcon
                         spacing: 6
+
+                        onClicked: {
+                            mainWindow.switchMeetingMode(3)
+                        }
                     }
                 }
             }
@@ -158,11 +175,22 @@ WindowBase {
                     font.weight: Font.Medium
                     color: "#F5F5F7"
                 }
+
+                Timer {
+                    interval: 300 // Timer interval in milliseconds
+                    running: true
+                    repeat: true
+
+                    onTriggered: {
+                        durationText.text = mainController.getDuration()
+                    }
+                }
             }
 
             // 右上角的摄像头显示区域
             Item {
                 id: cameraDisplayArea
+                visible: rttBtn.isSelected
                 width: 280
                 height: 156
                 anchors.top: parent.top
@@ -170,14 +198,13 @@ WindowBase {
                 anchors.right: parent.right
                 anchors.rightMargin: 12
 
-                property bool enableCamera: false
                 property int borderWidth: 2
                 property int borderRadius: 15
                 property color borderColor: "#59F5F5F7"
 
                 // 摄像头禁用时显示
                 Rectangle {
-                    visible: !cameraDisplayArea.enableCamera
+                    visible: !cameraBtn.cameraEnable
                     anchors.fill: parent
                     border.color: cameraDisplayArea.borderColor
                     border.width: cameraDisplayArea.borderWidth
@@ -207,25 +234,13 @@ WindowBase {
 
                 // 摄像头画面显示区域
                 Item {
-                    visible: cameraDisplayArea.enableCamera
+                    visible: cameraBtn.cameraEnable
                     anchors.fill: parent
 
                     Image {
                         id: cameraImage
                         anchors.fill: parent
                         fillMode: Image.PreserveAspectCrop
-
-                        Timer {
-                            id: cameraImageTimer
-                            interval: 60 // Timer interval in milliseconds
-                            running: cameraDisplayArea.enableCamera // Start the timer immediately
-                            repeat: true // Repeat the timer indefinitely
-
-                            onTriggered: {
-                                cameraImage.source = ""
-                                cameraImage.source = "image://memory/cameraImage"
-                            }
-                        }
                     }
 
                     Rectangle {
@@ -248,6 +263,22 @@ WindowBase {
                         color: "transparent"
                     }
                 }
+
+                // 更新摄像头画面定时器
+                Timer {
+                    interval: 60 // Timer interval in milliseconds
+                    running: true
+                    repeat: true
+
+                    onTriggered: {
+                        if (!cameraBtn.cameraEnable) {
+                            return
+                        }
+
+                        cameraImage.source = ""
+                        cameraImage.source = "image://memory/cameraImage"
+                    }
+                }
             }
 
 
@@ -267,18 +298,25 @@ WindowBase {
                     id: startBtn
                     width: 59
                     height: 36
-                    text: "Start"
+                    text: isChatting?"Stop":"Start"
                     anchors.centerIn: parent
                     borderRadius: 8
-                    bgNormalColor: "#7861FA"
-                    bgClickColor: "#6851E0"
+                    bgNormalColor: isChatting?"#DC4D48":"#7861FA"
+                    bgClickColor: isChatting?"#CC3D38":"#6851E0"
                     bgHoverColor: bgClickColor
 
+                    property bool isChatting: false
+
                     onClicked: {
-                        text = "Stop"
-                        bgNormalColor = "#DC4D48"
-                        bgClickColor = "#CC3D38"
-                        bgHoverColor = bgClickColor
+                        if (isChatting) {
+                            mainController.stopChat()
+                            isChatting = false
+                        } else {
+                            if (!mainController.beginChat()) {
+                                return
+                            }
+                            isChatting = true
+                        }
                     }
                 }
 
@@ -286,7 +324,7 @@ WindowBase {
                 Item {
                     id: saToolbarPanel
                     anchors.fill: parent
-                    visible: false
+                    visible: streamingAvatarBtn.isSelected
 
                     // 选择Avatar按钮
                     ButtonBase {
@@ -316,7 +354,7 @@ WindowBase {
                 Item {
                     id: rttToolbarPanel
                     anchors.fill: parent
-                    visible: true
+                    visible: rttBtn.isSelected
 
                     // 摄像头开关按钮
                     ButtonBase {
@@ -337,7 +375,8 @@ WindowBase {
                         property bool cameraEnable: false
 
                         onClicked: {
-                            //
+                            cameraEnable = !cameraEnable
+                            mainController.enableCamera(cameraEnable)
                         }
 
                         onCameraEnableChanged: {
@@ -370,7 +409,8 @@ WindowBase {
                         property bool microPhoneEnable: false
 
                         onClicked: {
-                            //
+                            microPhoneEnable = !microPhoneEnable
+                            mainController.enableMicrophone(microPhoneEnable)
                         }
 
                         onMicroPhoneEnableChanged: {
@@ -400,10 +440,17 @@ WindowBase {
                         spacing: 6
 
                         onClicked: {
-                            var chooseLanguageWindow = chooseLanguageWindowComponent.createObject(mainWindow, {"mainController": mainController})
-                            chooseLanguageWindow.confirmClick.connect(function() {
-                                //
-                            })
+                            var sourceLanguages = mainController.createListModel(selectLanguageBtn)
+                            var targetLanguages = mainController.createListModel(selectLanguageBtn)
+                            mainController.getTranslateLanguageList(sourceLanguages, targetLanguages)
+                            if (sourceLanguages.count === 0 || targetLanguages === 0) {
+                                mainController.showMessage("There is no language")
+                                return
+                            }
+
+                            chooseLanguageWindowComponent.createObject(mainWindow, {mainController: mainController,
+                                                                           sourceLanguageModel: sourceLanguages,
+                                                                           targetLanguageModel: targetLanguages})
                         }
                     }
                 }
@@ -514,8 +561,7 @@ WindowBase {
 
     //可能是qmltype信息不全，有M16警告，这里屏蔽下
     //@disable-check M16
-    onClosing: function(closeEvent) {
-        videoPlayerTimer.stop();
+    onClosing: function(closeEvent) {        
         mainController.quitApp();
     }
 
@@ -527,5 +573,13 @@ WindowBase {
     Component {
         id: chooseLanguageWindowComponent
         ChooseLanguageWindow {}
+    }
+
+    function switchMeetingMode(meetingMode) {
+        if (!mainController.switchMeetingMode(meetingMode)) {
+            return;
+        }
+
+        mainWindow.currentMeetingMode = meetingMode
     }
 }

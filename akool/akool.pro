@@ -22,6 +22,8 @@ SOURCES += \
         meetingcontroller.cpp \
         memoryimageprovider.cpp \
         settingmanager.cpp \
+        statusmanager.cpp \
+        translatelanguagecontroller.cpp \
         virtualcameramanager.cpp
 
 RESOURCES += qml.qrc
@@ -63,6 +65,8 @@ HEADERS += \
     meetingcontroller.h \
     memoryimageprovider.h \
     settingmanager.h \
+    statusmanager.h \
+    translatelanguagecontroller.h \
     virtualcameramanager.h
 
 # ffmpeg

@@ -2,9 +2,6 @@
 import QtQuick.Controls 2.15
 
 Rectangle {
-    // 下拉框数据
-    property var model: []
-
     id: comboBoxId
     width: parent.width
     height: 56
@@ -12,6 +9,12 @@ Rectangle {
     border.color: "#24F5F5F7"
     border.width: 1
     radius: 16
+
+    // 下拉框数据 { id: "1", language: "Chinese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: false}
+    property var model: null
+
+    // 选择的语言ID
+    property string selLanguageId: ""
 
     // 显示当前选中的文本
     Text {
@@ -38,7 +41,9 @@ Rectangle {
     // 点击时弹出下拉列表
     MouseArea {
         anchors.fill: parent
-        onClicked: popup.open()
+        onClicked: {
+            popup.open()
+        }
     }
 
     // 自定义下拉弹窗
@@ -60,10 +65,11 @@ Rectangle {
 
         contentItem: ListView {
             id: listView            
-            model: comboBoxId.model // ListElement { language: "Chinese"; flagImagePath: "qrc:/content/res/icon_camera.png"; isCurrent: false }
+            model: comboBoxId.model
             clip: true
 
             delegate: Rectangle {
+                id: listItem
                 width: listView.width
                 height: popup.contentItemHeight
                 color: (mouseArea.containsMouse||isCurrent)? "#27272E" : "transparent"
@@ -97,10 +103,32 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
-                        //
+                        for (var i=0; i<listView.model.count; i++) {
+                            var item = comboBoxId.model.get(i)
+                            if (item.tlId !== tlId) {
+                                listView.model.setProperty(i, "isCurrent", false)
+                            } else
+                            {
+                                listView.model.setProperty(i, "isCurrent", true)
+                                selectedText.text = item.language
+                                comboBoxId.selLanguageId = item.tlId
+                            }
+                        }
+
                         popup.close()
                     }
                 }
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        for (var i=0; i<comboBoxId.model.count; i++) {
+            var item = comboBoxId.model.get(i)
+            if (item.isCurrent) {
+                selectedText.text = item.language
+                comboBoxId.selLanguageId = item.tlId
+                break
             }
         }
     }

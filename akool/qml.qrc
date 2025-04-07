@@ -27,7 +27,7 @@
         <file>content/res/icon_microphone_disable.png</file>
         <file>content/res/icon_camera_disable.png</file>
         <file>content/qml/ChooseLanguageWindow.qml</file>
-        <file>content/qml/MyComboBox.qml</file>
+        <file>content/qml/LanguageComboBox.qml</file>
         <file>content/res/icon_arrowdown.png</file>
     </qresource>
     <qresource prefix="/qml"/>

@@ -5,6 +5,7 @@
 #include <qqml.h>
 #include "avatarcontroller.h"
 #include "meetingcontroller.h"
+#include "translatelanguagecontroller.h"
 #include "ipcworker.h"
 
 #define IPC_KEY  "{4ED33E4A-ee3A-920A-8523-158D74420098}"
@@ -58,6 +59,8 @@ private:
     QString m_selectAvatarId;
 
     AvatarController m_avatarController;
+
+    TranslateLanguageController m_tlController;
 
     MeetingController m_meetingController;
 

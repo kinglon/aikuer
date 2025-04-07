@@ -50,6 +50,8 @@ void MainController::run()
         return;
     }
 
+    // m_tlController.run();
+
     connect(&m_avatarController, &AvatarController::avatarDownloadCompletely, [this](const QVector<Avatar>& avatars) {
         QString jsonString = avatarListToJsonString(avatars);
         emit hasNewAvatar(jsonString);

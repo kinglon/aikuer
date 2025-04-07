@@ -22,7 +22,8 @@ WindowBase {
 
     property var mainController: null
 
-    signal confirmClick()
+    property var sourceLanguageModel: null
+    property var targetLanguageModel: null
 
     Item  {
         parent: contentArea
@@ -42,16 +43,13 @@ WindowBase {
         }
 
         // 语言下拉框
-        MyComboBox {
+        LanguageComboBox {
             id: languageComboBox
             width: parent.width
             height: 56
             anchors.top: languageLabel.bottom
             anchors.topMargin: 4
-            model: ListModel {
-                ListElement { language: "Chinese"; flagImagePath: "qrc:/content/res/icon_camera.png"; isCurrent: false; }
-                ListElement { language: "Japanese"; flagImagePath: "qrc:/content/res/icon_camera.png"; isCurrent: true; }
-            }
+            model: chooseLanguageWindow.sourceLanguageModel
         }
 
         Text {
@@ -66,16 +64,13 @@ WindowBase {
         }
 
         // 语言下拉框
-        MyComboBox {
+        LanguageComboBox {
             id: targetLanguageComboBox
             width: parent.width
             height: 56
             anchors.top: targetLanguageLabel.bottom
             anchors.topMargin: 4
-            model: ListModel {
-                ListElement { language: "Chinese"; flagImagePath: "qrc:/content/res/icon_camera.png"; isCurrent: false; }
-                ListElement { language: "Japanese"; flagImagePath: "qrc:/content/res/icon_camera.png"; isCurrent: true; }
-            }
+            model: chooseLanguageWindow.targetLanguageModel
         }
 
         // 确认按钮
@@ -91,9 +86,11 @@ WindowBase {
             borderWidth: 1
             borderRadius: 10
             bgNormalColor: "#7861FA"
+            disableBorderWidth: 1
+            enabled: languageComboBox.selLanguageId != "" && targetLanguageComboBox.selLanguageId != ""
 
             onClicked: {
-                chooseLanguageWindow.confirmClick()
+                mainController.selectTranslateLanguage(languageComboBox.selLanguageId, targetLanguageComboBox.selLanguageId)
                 chooseLanguageWindow.close()
             }
         }

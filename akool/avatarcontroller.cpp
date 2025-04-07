@@ -159,10 +159,6 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
         avata.m_avatarId = avatarJson["_id"].toString();
         avata.m_avatarIdForService = avatarJson["avatar_id"].toString();
         avata.m_avatarUrl = avatarJson["thumbnailUrl"].toString();
-
-        QUrl qUrl(avata.m_avatarUrl);
-        QString path = qUrl.path(); // Get the path part of the URL
-        QFileInfo fileInfo(path);
         if (avata.isValid())
         {            
             QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;
