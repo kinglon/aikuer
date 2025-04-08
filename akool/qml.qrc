@@ -29,8 +29,9 @@
         <file>content/qml/ChooseLanguageWindow.qml</file>
         <file>content/qml/LanguageComboBox.qml</file>
         <file>content/res/icon_arrowdown.png</file>
+        <file>content/qml/MessageBox.qml</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>
-    <qresource lang="cn" prefix="/qml"/>
+    <qresource prefix="/qml" lang="cn"/>
 </RCC>

@@ -50,6 +50,10 @@ QtObject {
         cppMainController.setSelAvatarId(avatarId)
     }
 
+    function getSelectAvatarId() {
+        return cppMainController.getSelAvatarId()
+    }
+
     // 切换会议模式 rtt=1 sa=2 lfs=3
     function switchMeetingMode(meetingMode) {
         return cppMainController.switchMeetingMode(meetingMode)
@@ -84,7 +88,7 @@ QtObject {
     function getTranslateLanguageList(sourceLanguages, targetLanguages) {
         sourceLanguages.clear()
         var languageJsonString = cppMainController.getLanguageList(true);
-        var languages = JSON.parse(sourceLanguageJsonString)
+        var languages = JSON.parse(languageJsonString)
         for (var i=0; i<languages.length; i++) {
             sourceLanguages.append(languages[i])
         }

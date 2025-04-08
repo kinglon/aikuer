@@ -22,7 +22,7 @@ WindowBase {
 
     property var mainController: null
 
-    signal confirmClick()
+    property string selectAvatarId: ""
 
     Item  {
         parent: contentArea
@@ -116,7 +116,12 @@ WindowBase {
             bgNormalColor: "#7861FA"
 
             onClicked: {
-                chooseAvatarWindow.confirmClick()
+                var selAvatarId = mainController.getSelectAvatarId()
+                if (selAvatarId === "") {
+                    messageBox.show("Please select an avatar")
+                    return
+                }
+
                 chooseAvatarWindow.close()
             }
         }
@@ -138,6 +143,13 @@ WindowBase {
             onClicked: {
                 chooseAvatarWindow.close()
             }
+        }
+
+        // 消息提示框
+        MessageBox {
+            id: messageBox
+            anchors.centerIn: parent
+            z: 1
         }
     }
 

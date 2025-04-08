@@ -3,6 +3,7 @@
 #include <QNetworkReply>
 #include <QFile>
 #include "settingmanager.h"
+#include "statusmanager.h"
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -10,6 +11,10 @@
 #include <QFileInfo>
 #include "../Utility/ImPath.h"
 #include "filedownloader.h"
+
+// from参数
+#define SOURCE_FROM "4"
+#define TARGET_FROM "5"
 
 TranslateLanguageController::TranslateLanguageController(QObject *parent)
     : HttpClientBase{parent}
@@ -21,7 +26,7 @@ TranslateLanguageController::TranslateLanguageController(QObject *parent)
 
 void TranslateLanguageController::run()
 {
-    if (SettingManager::getInstance()->m_loginToken.isEmpty())
+    if (StatusManager::getInstance()->m_loginToken.isEmpty())
     {
         qCritical("not login");
         emit runFinish();
@@ -29,7 +34,7 @@ void TranslateLanguageController::run()
     }
 
     m_currentStep = STEP_GET_SOURCE_LANG_LIST;
-    getLanguageListFromServer("3");
+    getLanguageListFromServer(SOURCE_FROM);
 
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &TranslateLanguageController::onMainTimer);
@@ -52,11 +57,11 @@ void TranslateLanguageController::onMainTimer()
     // 获取语言列表失败，重试
     if (m_currentStep == STEP_GET_SOURCE_LANG_LIST && !m_currentStepOnGoing)
     {
-        getLanguageListFromServer("3");
+        getLanguageListFromServer(SOURCE_FROM);
     }
     else if (m_currentStep == STEP_GET_TARGET_LANG_LIST && !m_currentStepOnGoing)
     {
-        getLanguageListFromServer("4");
+        getLanguageListFromServer(TARGET_FROM);
     }
     else if (m_currentStep == STEP_DOWNLOAD_FLAG && !m_currentStepOnGoing)
     {
@@ -74,7 +79,7 @@ void TranslateLanguageController::getLanguageListFromServer(QString from)
     addCommonHeader(request);
 
     QString bearerToken = "Bearer ";
-    bearerToken += SettingManager::getInstance()->m_loginToken;
+    bearerToken += StatusManager::getInstance()->m_loginToken;
     request.setRawHeader("Authorization", bearerToken.toUtf8());
     m_networkAccessManager.get(request);
 
@@ -93,7 +98,7 @@ void TranslateLanguageController::onHttpResponse(QNetworkReply *reply)
     if (m_currentStep == STEP_GET_SOURCE_LANG_LIST)
     {
         m_currentStep = STEP_GET_TARGET_LANG_LIST;
-        getLanguageListFromServer("4");
+        getLanguageListFromServer(TARGET_FROM);
     }
     else if (m_currentStep == STEP_GET_TARGET_LANG_LIST)
     {

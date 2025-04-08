@@ -2,6 +2,7 @@
 #include <QNetworkProxy>
 #include <QNetworkReply>
 #include <QFile>
+#include "statusmanager.h"
 #include "settingmanager.h"
 #include <QJsonObject>
 #include <QJsonArray>
@@ -21,7 +22,7 @@ AvatarController::AvatarController(QObject *parent)
 
 void AvatarController::run()
 {
-    if (SettingManager::getInstance()->m_loginToken.isEmpty())
+    if (StatusManager::getInstance()->m_loginToken.isEmpty())
     {
         qCritical("not login");
         emit runFinish();
@@ -85,7 +86,7 @@ void AvatarController::getAvatarListFromServer()
     addCommonHeader(request);
 
     QString bearerToken = "Bearer ";
-    bearerToken += SettingManager::getInstance()->m_loginToken;
+    bearerToken += StatusManager::getInstance()->m_loginToken;
     request.setRawHeader("Authorization", bearerToken.toUtf8());
     m_networkAccessManager.get(request);
 

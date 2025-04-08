@@ -11,6 +11,8 @@ protected:
 public:
     static SettingManager* getInstance();
 
+    void save();
+
 private:
 	void Load();
 
@@ -23,6 +25,9 @@ public:
     // 后端服务host
     QString m_host;
 
-    // 登录token
-    QString m_loginToken;
+    // Real-time Translation language code
+    QString m_sourceLanguageId;
+    QString m_targetLanguageId;
+    QString m_sourceLanguageCode;
+    QString m_targetLanguageCode;
 };

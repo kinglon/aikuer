@@ -4,12 +4,12 @@ import QtQuick.Layouts 1.15
 
 WindowBase {
     id: chooseLanguageWindow
-    width: 370
+    width: 430
     height: 310
     maximumHeight: 310
-    maximumWidth: 370
+    maximumWidth: 430
     minimumHeight: 310
-    minimumWidth: 370
+    minimumWidth: 430
     backgroundColor: "#15151A"
     hasMaxButton: false
     hasMinButton: false
@@ -87,9 +87,18 @@ WindowBase {
             borderRadius: 10
             bgNormalColor: "#7861FA"
             disableBorderWidth: 1
-            enabled: languageComboBox.selLanguageId != "" && targetLanguageComboBox.selLanguageId != ""
 
             onClicked: {
+                if (languageComboBox.selLanguageId === "") {
+                    messageBox.show("Please select the input language")
+                    return
+                }
+
+                if (targetLanguageComboBox.selLanguageId === "") {
+                    messageBox.show("Please select the target language")
+                    return
+                }
+
                 mainController.selectTranslateLanguage(languageComboBox.selLanguageId, targetLanguageComboBox.selLanguageId)
                 chooseLanguageWindow.close()
             }
@@ -112,6 +121,13 @@ WindowBase {
             onClicked: {
                 chooseLanguageWindow.close()
             }
+        }
+
+        // 消息提示框
+        MessageBox {
+            id: messageBox
+            anchors.centerIn: parent
+            z: 1
         }
     }
 

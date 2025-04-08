@@ -75,14 +75,7 @@ void MeetingController::enableCamera(bool enable)
 {
     if (m_rtcEngine && m_currentState == MEETING_STATE_IN_MEETING)
     {
-        if (enable)
-        {
-            m_rtcEngine->enableVideo();
-        }
-        else
-        {
-            m_rtcEngine->disableVideo();
-        }
+        m_rtcEngine->enableLocalVideo(enable);
     }
 }
 
@@ -101,7 +94,7 @@ void MeetingController::createSession()
     request.setUrl(url);
     addCommonHeader(request);
     QString bearerToken = "Bearer ";
-    bearerToken += SettingManager::getInstance()->m_loginToken;
+    bearerToken += StatusManager::getInstance()->m_loginToken;
     request.setRawHeader("Authorization", bearerToken.toUtf8());
 
     QJsonObject bodyJson;
@@ -112,11 +105,11 @@ void MeetingController::createSession()
     }
     else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
     {
-        bodyJson["avatar_id"] = "";
+        bodyJson["avatar_id"] = "JericTest";
         bodyJson["scene_mode"] = "translate";
         bodyJson["voice_id"] = "";
-        bodyJson["source_lang"] = StatusManager::getInstance()->m_sourceLanguageCode;
-        bodyJson["target_lang"] = StatusManager::getInstance()->m_targetLanguageCode;
+        bodyJson["source_lang"] = SettingManager::getInstance()->m_sourceLanguageCode;
+        bodyJson["target_lang"] = SettingManager::getInstance()->m_targetLanguageCode;
         bodyJson["lip_sync"] = false;
     }
     m_networkAccessManager.post(request, QJsonDocument(bodyJson).toJson());
@@ -138,7 +131,7 @@ void MeetingController::endSession()
     request.setUrl(url);
     addCommonHeader(request);
     QString bearerToken = "Bearer ";
-    bearerToken += SettingManager::getInstance()->m_loginToken;
+    bearerToken += StatusManager::getInstance()->m_loginToken;
     request.setRawHeader("Authorization", bearerToken.toUtf8());
 
     QJsonObject bodyJson;
@@ -243,9 +236,10 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     options.autoSubscribeVideo = true;
 
     // 开启麦克风、摄像头
+    m_rtcEngine->enableVideo();
     if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
     {
-        m_rtcEngine->disableVideo();
+        m_rtcEngine->enableLocalVideo(false);
         options.enableAudioRecordingOrPlayout = true;
         options.publishMicrophoneTrack = true;
     }
@@ -257,14 +251,7 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
             options.publishMicrophoneTrack = true;
         }
 
-        if (StatusManager::getInstance()->m_enableCamera)
-        {
-            m_rtcEngine->enableVideo();
-        }
-        else
-        {
-            m_rtcEngine->disableVideo();
-        }
+        m_rtcEngine->enableLocalVideo(StatusManager::getInstance()->m_enableCamera);
     }
 
     // 回音消除，把扬声器声音送进去

@@ -66,7 +66,6 @@ Rectangle {
         contentItem: ListView {
             id: listView            
             model: comboBoxId.model
-            clip: true
 
             delegate: Rectangle {
                 id: listItem

@@ -17,6 +17,9 @@ public:
     static StatusManager* getInstance();
 
 public:
+    // 登录token
+    QString m_loginToken;
+
     // 会议模式
     int m_currentMeetingMode = MEETING_MODE_SA;
 
@@ -24,13 +27,7 @@ public:
     bool m_enableCamera = false;
 
     // 麦克风开关
-    bool m_enableMicrophone = false;
-
-    // Real-time Translation language code
-    QString m_sourceLanguageId;
-    QString m_targetLanguageId;
-    QString m_sourceLanguageCode;
-    QString m_targetLanguageCode;
+    bool m_enableMicrophone = false;    
 
     // 选择avatar
     QString m_avatarId;

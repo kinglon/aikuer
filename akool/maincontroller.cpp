@@ -28,9 +28,9 @@ void MainController::setLaunchParam(const QString& launchParam)
     }
 
     QUrlQuery query(qUrl);
-    SettingManager::getInstance()->m_loginToken = query.queryItemValue("token");
+    StatusManager::getInstance()->m_loginToken = query.queryItemValue("token");
     QString avatarId = query.queryItemValue("avatar_id");
-    if (!SettingManager::getInstance()->m_loginToken.isEmpty() && !avatarId.isEmpty())
+    if (!avatarId.isEmpty())
     {
         StatusManager::getInstance()->m_avatarId = "Jeric";
         StatusManager::getInstance()->m_avatarIdForService = avatarId;
@@ -39,7 +39,7 @@ void MainController::setLaunchParam(const QString& launchParam)
 
 void MainController::run()
 {
-    if (SettingManager::getInstance()->m_loginToken.isEmpty())
+    if (StatusManager::getInstance()->m_loginToken.isEmpty())
     {
         qCritical("not login");
         return;
@@ -147,16 +147,16 @@ bool MainController::beginChat()
     {
         if (StatusManager::getInstance()->m_avatarId.isEmpty())
         {
-            emit showMessage("Select an avatar first");
+            emit showMessage("Please select an avatar");
             return false;
         }
     }
     else if (meetingMode == MEETING_MODE_RTT)
     {
-        if (StatusManager::getInstance()->m_sourceLanguageCode.isEmpty()
-                || StatusManager::getInstance()->m_targetLanguageCode.isEmpty())
+        if (SettingManager::getInstance()->m_sourceLanguageCode.isEmpty()
+                || SettingManager::getInstance()->m_targetLanguageCode.isEmpty())
         {
-            emit showMessage("Select target language first");
+            emit showMessage("Please select the target language");
             return false;
         }
     }
@@ -202,19 +202,19 @@ QString MainController::getLanguageList(bool source)
     if (source)
     {
         languages = m_tlController.getSourceLanguages();
-        selLanguageId = StatusManager::getInstance()->m_sourceLanguageId;
+        selLanguageId = SettingManager::getInstance()->m_sourceLanguageId;
     }
     else
     {
         languages = m_tlController.getTargetLanguages();
-        selLanguageId = StatusManager::getInstance()->m_targetLanguageId;
+        selLanguageId = SettingManager::getInstance()->m_targetLanguageId;
     }
 
     QJsonArray languageArray;
     for (const auto& language : languages)
     {
         QJsonObject languageObject;
-        languageObject["id"] = language.m_tlId;
+        languageObject["tlId"] = language.m_tlId;
         languageObject["language"] = language.m_languageName;
         languageObject["flagImagePath"] = QString("file:///") + language.m_localFlagImagePath;
         languageObject["isCurrent"] = selLanguageId==language.m_tlId;
@@ -231,8 +231,8 @@ void MainController::selectTranslateLanguage(QString sourceLanguageId, QString t
     {
         if (language.m_tlId == sourceLanguageId)
         {
-            StatusManager::getInstance()->m_sourceLanguageCode = language.m_languageCode;
-            StatusManager::getInstance()->m_sourceLanguageId = sourceLanguageId;
+            SettingManager::getInstance()->m_sourceLanguageCode = language.m_languageCode;
+            SettingManager::getInstance()->m_sourceLanguageId = sourceLanguageId;
             break;
         }
     }
@@ -242,11 +242,13 @@ void MainController::selectTranslateLanguage(QString sourceLanguageId, QString t
     {
         if (language.m_tlId == targetLanguageId)
         {
-            StatusManager::getInstance()->m_targetLanguageCode = language.m_languageCode;
-            StatusManager::getInstance()->m_targetLanguageId = targetLanguageId;
+            SettingManager::getInstance()->m_targetLanguageCode = language.m_languageCode;
+            SettingManager::getInstance()->m_targetLanguageId = targetLanguageId;
             break;
         }
     }
+
+    SettingManager::getInstance()->save();
 }
 
 void MainController::quitApp()
