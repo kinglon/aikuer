@@ -24,8 +24,8 @@ public:
     // 设置启动参数（命令行参数）
     void setLaunchParam(const QString& launchParam);
 
-    // 调用者释放image
-    QImage* getPlayerImage();
+    MeetingController& getMeetingController() { return m_meetingController; }
+    AvatarController& getAvatarController() { return m_avatarController; }
 
 public: // QML调用接口
     // 获取所有可用avatars，返回JSON串

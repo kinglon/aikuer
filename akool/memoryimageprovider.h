@@ -17,8 +17,6 @@ public:
 
 private:
     MainController* m_mainController = nullptr;
-
-    QImage* m_lastImage = nullptr;
 };
 
 #endif // MEMORYIMAGEPROVIDER_H

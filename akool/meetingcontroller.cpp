@@ -66,16 +66,28 @@ void MeetingController::beginChat()
 
 void MeetingController::stopChat()
 {
-    leaveChannel();
+    leaveChannel();    
+
     m_currentState = MEETING_STATE_INIT;
     m_isChatting = false;
 }
 
 void MeetingController::enableCamera(bool enable)
 {
-    if (m_rtcEngine && m_currentState == MEETING_STATE_IN_MEETING)
+    if (m_rtcEngine)
     {
         m_rtcEngine->enableLocalVideo(enable);
+    }
+
+    if (!enable)
+    {
+        m_mutex.lock();
+        if (m_lastLocalImage)
+        {
+            delete m_lastLocalImage;
+            m_lastLocalImage = nullptr;
+        }
+        m_mutex.unlock();
     }
 }
 
@@ -83,7 +95,7 @@ void MeetingController::enableMicrophone(bool enable)
 {
     if (m_rtcEngine && m_currentState == MEETING_STATE_IN_MEETING)
     {
-        m_rtcEngine->muteLocalAudioStream(enable);
+        m_rtcEngine->muteLocalAudioStream(!enable);
     }
 }
 
@@ -234,24 +246,16 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     options.clientRoleType = CLIENT_ROLE_BROADCASTER;
     options.autoSubscribeAudio = true;
     options.autoSubscribeVideo = true;
-
-    // 开启麦克风、摄像头
-    m_rtcEngine->enableVideo();
-    if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
+    if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA
+            || (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT && StatusManager::getInstance()->m_enableMicrophone))
     {
-        m_rtcEngine->enableLocalVideo(false);
         options.enableAudioRecordingOrPlayout = true;
         options.publishMicrophoneTrack = true;
     }
-    else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
+    else
     {
-        if (StatusManager::getInstance()->m_enableMicrophone)
-        {
-            options.enableAudioRecordingOrPlayout = true;
-            options.publishMicrophoneTrack = true;
-        }
-
-        m_rtcEngine->enableLocalVideo(StatusManager::getInstance()->m_enableCamera);
+        options.enableAudioRecordingOrPlayout = false;
+        options.publishMicrophoneTrack = false;
     }
 
     // 回音消除，把扬声器声音送进去
@@ -362,6 +366,12 @@ bool MeetingController::initAgoraSdk(QString appId)
         qCritical("failed to call enableAudio, error: %d", ret);
     }
 
+    ret = m_rtcEngine->enableVideo();
+    if (ret != 0)
+    {
+        qCritical("failed to call enableVideo, error: %d", ret);
+    }
+
     m_rtcEngine->setAudioProfile(AUDIO_PROFILE_IOT);
     agora::util::AutoPtr<agora::media::IMediaEngine> mediaEngine;
     mediaEngine.queryInterface(m_rtcEngine, AGORA_IID_MEDIA_ENGINE);
@@ -410,6 +420,36 @@ void MeetingController::unInitAgoraSdk()
     }
 }
 
+bool MeetingController::onCaptureVideoFrame(agora::rtc::VIDEO_SOURCE_TYPE , VideoFrame& videoFrame)
+{
+    if (videoFrame.type != agora::media::base::VIDEO_PIXEL_BGRA)
+    {
+        qCritical("the type of local video frame is not VIDEO_PIXEL_BGRA");
+        return true;
+    }
+
+    QImage* image = new QImage(videoFrame.width, videoFrame.height, QImage::Format_RGB888);
+    for (int y = 0; y < videoFrame.height; y++)
+    {
+        for (int x = 0; x < videoFrame.width; x++)
+        {
+            uint8_t *ptr = image->scanLine(y) + x * 3;
+            ptr[0] = videoFrame.yBuffer[y * videoFrame.width*4 + x * 4 + 2];
+            ptr[1] = videoFrame.yBuffer[y * videoFrame.width*4 + x * 4 + 1];
+            ptr[2] = videoFrame.yBuffer[y * videoFrame.width*4 + x * 4];
+        }
+    }
+    m_mutex.lock();
+    if (m_lastLocalImage)
+    {
+        delete m_lastLocalImage;
+    }
+    m_lastLocalImage = image;
+    m_mutex.unlock();
+
+    return true;
+}
+
 bool MeetingController::onRenderVideoFrame(const char* channelId, rtc::uid_t remoteUid, VideoFrame& videoFrame)
 {
     (void)channelId;
@@ -417,7 +457,7 @@ bool MeetingController::onRenderVideoFrame(const char* channelId, rtc::uid_t rem
 
     if (videoFrame.type != agora::media::base::VIDEO_PIXEL_BGRA)
     {
-        qCritical("the type of video frame is not VIDEO_PIXEL_BGRA");
+        qCritical("the type of remote video frame is not VIDEO_PIXEL_BGRA");
         return false;
     }
 
@@ -435,22 +475,36 @@ bool MeetingController::onRenderVideoFrame(const char* channelId, rtc::uid_t rem
         }
     }
     m_mutex.lock();
-    if (m_lastImage)
+    if (m_lastRemoteImage)
     {
-        delete m_lastImage;
+        delete m_lastRemoteImage;
     }
-    m_lastImage = image;
+    m_lastRemoteImage = image;
     m_mutex.unlock();
 
     return false;
 }
 
-QImage* MeetingController::popImage()
+QImage MeetingController::getRemoteImage()
 {
-    QImage* image = nullptr;
+    QImage image;
     m_mutex.lock();
-    image = m_lastImage;
-    m_lastImage = nullptr;
+    if (m_lastRemoteImage)
+    {
+        image = *m_lastRemoteImage;
+    }
+    m_mutex.unlock();
+    return image;
+}
+
+QImage MeetingController::getLocalImage()
+{
+    QImage image;
+    m_mutex.lock();
+    if (m_lastLocalImage)
+    {
+        image = *m_lastLocalImage;
+    }
     m_mutex.unlock();
     return image;
 }
@@ -464,6 +518,14 @@ void MeetingController::leaveChannel()
             m_rtcEngine->leaveChannel();
         }
     }
+
+    m_mutex.lock();
+    if (m_lastRemoteImage)
+    {
+        delete m_lastRemoteImage;
+        m_lastRemoteImage = nullptr;
+    }
+    m_mutex.unlock();
 
     endSession();
 }

@@ -30,6 +30,7 @@
         <file>content/qml/LanguageComboBox.qml</file>
         <file>content/res/icon_arrowdown.png</file>
         <file>content/qml/MessageBox.qml</file>
+        <file>content/res/no_camera_bg.png</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>

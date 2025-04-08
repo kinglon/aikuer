@@ -159,7 +159,7 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
         Avatar avata;
         avata.m_avatarId = avatarJson["_id"].toString();
         avata.m_avatarIdForService = avatarJson["avatar_id"].toString();
-        avata.m_avatarUrl = avatarJson["thumbnailUrl"].toString();
+        avata.m_avatarImageUrl = avatarJson["thumbnailUrl"].toString();
         if (avata.isValid())
         {            
             QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;
@@ -218,7 +218,7 @@ void AvatarController::downloadAvatarImage()
     QString localAvatarImagePath = m_avatarPath + avatar.m_avatarId;
 
     FileDownloader* fileDownloader = new FileDownloader();
-    fileDownloader->setDownloadUrl(avatar.m_avatarUrl);
+    fileDownloader->setDownloadUrl(avatar.m_avatarImageUrl);
     fileDownloader->setSaveFilePath(localAvatarImagePath);
     QString avatarId = avatar.m_avatarId;
     connect(fileDownloader, &FileDownloader::runFinish,
@@ -250,7 +250,7 @@ void AvatarController::downloadAvatarImage()
         fileDownloader->deleteLater();
     });
 
-    qInfo("avatar download url: %s", avatar.m_avatarUrl.toStdString().c_str());
+    qInfo("avatar download url: %s", avatar.m_avatarImageUrl.toStdString().c_str());
     if (!fileDownloader->run())
     {
         fileDownloader->deleteLater();

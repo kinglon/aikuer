@@ -107,14 +107,19 @@ void MainController::setSelAvatarId(QString avatarId)
     }
 }
 
-QImage* MainController::getPlayerImage()
-{
-    return m_meetingController.popImage();
-}
-
 bool MainController::switchMeetingMode(int meetingMode)
 {
     StatusManager::getInstance()->m_currentMeetingMode = meetingMode;
+
+    if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
+    {
+        m_meetingController.enableCamera(false);
+    }
+    else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
+    {
+        m_meetingController.enableCamera(StatusManager::getInstance()->m_enableCamera);
+    }
+
     return true;
 }
 

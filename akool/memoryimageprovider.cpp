@@ -3,31 +3,49 @@
 QImage MemoryImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
     (void)requestedSize;
+
+    if (m_mainController == nullptr)
+    {
+        return QImage();
+    }
+
     QImage* retImage = nullptr;
     if (id == "videoPlayer")
     {
-        if (m_mainController)
+        QImage remoteImage = m_mainController->getMeetingController().getRemoteImage();
+        if (!remoteImage.isNull())
         {
-            QImage* image = m_mainController->getPlayerImage();
-            if (image && image != m_lastImage)
-            {
-                delete m_lastImage;
-                m_lastImage = image;
-            }
-        }
-
-        if (m_lastImage)
-        {
-            retImage = m_lastImage;
+            retImage = &remoteImage;
         }
         else
         {
+            // todo by yejinlong, 有选择avatar就播放avatar视频
+
+            // 默认等待播放图片
             static QImage waitingImage;
             if (waitingImage.isNull())
             {
                 waitingImage.load(":/content/res/waiting_play.png");
             }
             retImage = &waitingImage;
+        }
+    }
+    else if (id == "cameraImage")
+    {
+        QImage localImage = m_mainController->getMeetingController().getLocalImage();
+        if (!localImage.isNull())
+        {
+            retImage = &localImage;
+        }
+        else
+        {
+            // 默认无摄像头画面
+            static QImage noCameraImage;
+            if (noCameraImage.isNull())
+            {
+                noCameraImage.load(":/content/res/no_camera_bg.png");
+            }
+            retImage = &noCameraImage;
         }
     }
 

@@ -15,10 +15,17 @@ public:
     // avatar id，服务端用的
     QString m_avatarIdForService;
 
-    QString m_avatarUrl;
+    // avatar图片url
+    QString m_avatarImageUrl;
+
+    // avatar视频url
+    QString m_avatarVideoUrl;
 
     // avatar在本地的图片文件路径
     QString m_localImagePath;
+
+    // avatar在本地的视频文件路径
+    QString m_localVideoPath;
 
 public:
     bool isValid() const
@@ -40,6 +47,11 @@ public:
 class AvatarController : public HttpClientBase
 {
     Q_OBJECT
+
+    enum {
+        STEP_INIT = 1,
+        STEP_GET_AVATAR_LIST = 2,
+    };
 
 public:
     explicit AvatarController(QObject *parent = nullptr);

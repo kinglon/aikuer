@@ -36,8 +36,11 @@ public:
     void enableCamera(bool enable);
     void enableMicrophone(bool enable);
 
-    // 用完要释放
-    QImage* popImage();    
+    // 获取远端视频画面，可能没有画面
+    QImage getRemoteImage();
+
+    // 获取本地视频画面，可能没有画面
+    QImage getLocalImage();
 
 signals:
     void hasError(QString errorMsg);
@@ -51,11 +54,13 @@ protected:
 
     virtual agora::media::base::VIDEO_PIXEL_FORMAT getVideoFormatPreference() override { return agora::media::base::VIDEO_PIXEL_BGRA; }
 
+    // 本地的视频画面
+    virtual bool onCaptureVideoFrame(agora::rtc::VIDEO_SOURCE_TYPE , VideoFrame& ) override;
+    // 远端用户的视频画面
     virtual bool onRenderVideoFrame(const char* channelId, rtc::uid_t remoteUid, VideoFrame& videoFrame) override;
     virtual bool onTranscodedVideoFrame(VideoFrame& )override { return true; }
     virtual bool onMediaPlayerVideoFrame(VideoFrame& , int ) override { return true; }
     virtual bool onPreEncodeVideoFrame(agora::rtc::VIDEO_SOURCE_TYPE , VideoFrame& ) override { return true; }
-    virtual bool onCaptureVideoFrame(agora::rtc::VIDEO_SOURCE_TYPE , VideoFrame& ) override { return true; }
 
 private slots:
     void onMainTimer();
@@ -84,7 +89,11 @@ private:
 
     int m_currentState = MEETING_STATE_INIT;
 
-    QImage* m_lastImage = nullptr;
+    // 远端视频画面
+    QImage* m_lastRemoteImage = nullptr;
+
+    // 本地视频画面
+    QImage* m_lastLocalImage = nullptr;
 
     IRtcEngine* m_rtcEngine = nullptr;
 
