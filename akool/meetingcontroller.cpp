@@ -77,6 +77,14 @@ void MeetingController::enableCamera(bool enable)
     if (m_rtcEngine)
     {
         m_rtcEngine->enableLocalVideo(enable);
+        if (enable)
+        {
+            m_rtcEngine->startPreview();
+        }
+        else
+        {
+            m_rtcEngine->stopPreview();
+        }
     }
 
     if (!enable)
@@ -240,6 +248,8 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     {
         return false;
     }
+
+    m_rtcEngine->enableLocalVideo(StatusManager::getInstance()->m_enableCamera);
 
     ChannelMediaOptions options;
     options.channelProfile = CHANNEL_PROFILE_COMMUNICATION;
@@ -474,6 +484,17 @@ bool MeetingController::onRenderVideoFrame(const char* channelId, rtc::uid_t rem
             ptr[2] = videoFrame.yBuffer[y * videoFrame.width*4 + x * 4];
         }
     }
+
+    // 调试远端画面代码
+//    static int width = 0;
+//    static int height = 0;
+//    if (image->width() != width || image->height() != height)
+//    {
+//        width = image->width();
+//        height = image->height();
+//        image->save("C:\\Users\\zengxiangbin\\Downloads\\1.png");
+//    }
+
     m_mutex.lock();
     if (m_lastRemoteImage)
     {
