@@ -243,12 +243,12 @@ WindowBase {
                         anchors.fill: parent
                         fillMode: Image.PreserveAspectCrop
                         source: "qrc:/content/res/no_camera_bg.png"
+                        visible: false
                         cache: false
                     }
 
                     Rectangle {
                         id: mask
-                        visible: false
                         anchors.fill: parent
                         radius: cameraDisplayArea.borderRadius                        
                     }
