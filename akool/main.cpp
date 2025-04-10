@@ -9,6 +9,9 @@
 #include "ipcworker.h"
 #include "maincontroller.h"
 #include "memoryimageprovider.h"
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
+#include <QQuickWindow>
 
 CLogUtil* g_dllLog = nullptr;
 
@@ -38,6 +41,31 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
         (*originalHandler)(type, context, msg);
     }
 }
+
+bool isOpenGLSupported()
+{
+    QOpenGLContext ctx;
+    QSurfaceFormat fmt;
+    fmt.setRenderableType(QSurfaceFormat::OpenGL);
+    ctx.setFormat(fmt);
+    if (!ctx.create())
+    {
+        qInfo("Hardware OpenGL context creation failed");
+        return false;
+    }
+
+    qInfo("OpenGL version: %d.%d", fmt.majorVersion(), fmt.minorVersion());
+
+    QSurfaceFormat createdFormat = ctx.format();
+    if (createdFormat.majorVersion() < 2)
+    {
+        qInfo("OpenGL version too low");
+        return false;
+    }
+
+    return true;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -71,9 +99,16 @@ int main(int argc, char *argv[])
     originalHandler = qInstallMessageHandler(logToFile);
 
     qputenv("QT_FONT_DPI", "100");
-    //qputenv("QSG_INFO", "1");
 
     QGuiApplication app(argc, argv);
+
+    // 如果不支持opengl硬件加速，就使用opengl软件渲染
+    if (!isOpenGLSupported())
+    {
+        qInfo() << "use software opengl";
+        QQuickWindow::setSceneGraphBackend(QSGRendererInterface::Software);
+    }
+    qInfo("Actual render backend: %s", QQuickWindow::sceneGraphBackend().toStdString().c_str());
 
     QFont defaultFont("Arial");
     app.setFont(defaultFont);
