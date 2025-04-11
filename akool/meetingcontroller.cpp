@@ -278,6 +278,9 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
         options.publishCustomAudioTrackId = m_audioTrackId;
     }
 
+    // 声网dump回音消除内部的音频文件
+    //m_rtcEngine->setParameters("{\"che.audio.frame_dump\": true}");
+
     int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                              channel.toStdString().c_str(),
                              uid, options);
