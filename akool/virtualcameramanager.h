@@ -12,7 +12,12 @@ public:
 public:
     static VirtualCameraManager* getInstance();
 
-    void sendFrame(int width, int height, void* data);
+    void sendFrame(int width, int height, void* data);    
+
+    void enableChangeCameraSize() { m_enableChangeCameraSize = true; }
+
+private:
+    bool m_enableChangeCameraSize = false;
 };
 
 #endif // VIRTUALCAMERAMANAGER_H

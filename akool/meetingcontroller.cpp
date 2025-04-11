@@ -249,6 +249,9 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
         return false;
     }
 
+    // 会议模式切换，可能导致画面大小变化，每次加入会议前允许改变虚拟摄像头画面大小
+    VirtualCameraManager::getInstance()->enableChangeCameraSize();
+
     m_rtcEngine->enableLocalVideo(StatusManager::getInstance()->m_enableCamera);
 
     ChannelMediaOptions options;
