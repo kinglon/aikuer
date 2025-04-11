@@ -13,6 +13,9 @@ Rectangle {
     // 下拉框数据 { id: "1", language: "Chinese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: false}
     property var model: null
 
+    // 下拉框
+    property var popup: null
+
     // 选择的语言ID
     property string selLanguageId: ""
 
@@ -42,82 +45,14 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            popup.open()
-        }
-    }
-
-    // 自定义下拉弹窗
-    Popup {
-        id: popup
-        y: parent.height
-        width: parent.width
-        padding: 6
-        height: Math.min(7, listView.count) * contentItemHeight + 2*padding
-
-        property int contentItemHeight: 41
-
-        background: Rectangle {
-            color: "#1A1A1F"
-            border.color: "#24F5F5F7"
-            border.width: 1
-            radius: 12
-        }
-
-        contentItem: ListView {
-            id: listView            
-            model: comboBoxId.model
-
-            delegate: Rectangle {
-                id: listItem
-                width: listView.width
-                height: popup.contentItemHeight
-                color: (mouseArea.containsMouse||isCurrent)? "#27272E" : "transparent"
-                radius: 8
-                border.width: (mouseArea.containsMouse||isCurrent)? 1 : 0
-                border.color: color
-
-                Image {
-                    id: flagImageId
-                    width: 16
-                    height: 12
-                    anchors.left: parent.left
-                    anchors.leftMargin: 14
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: flagImagePath
-                    fillMode: Image.PreserveAspectFit
-                }
-
-                Text {
-                    anchors.left: flagImageId.right
-                    anchors.leftMargin: 3
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: language
-                    color: (mouseArea.containsMouse||isCurrent)?"#F5F5F7":"#8CEBEBED"
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        for (var i=0; i<listView.model.count; i++) {
-                            var item = comboBoxId.model.get(i)
-                            if (item.tlId !== tlId) {
-                                listView.model.setProperty(i, "isCurrent", false)
-                            } else
-                            {
-                                listView.model.setProperty(i, "isCurrent", true)
-                                selectedText.text = item.language
-                                comboBoxId.selLanguageId = item.tlId
-                            }
-                        }
-
-                        popup.close()
-                    }
-                }
+            var globalPos = comboBoxId.mapToGlobal(0, 0)
+            if (popup == null) {
+                popup = languagePopupComponent.createObject(null, {"comboBox": comboBoxId})
             }
+            popup.x = globalPos.x
+            popup.y = globalPos.y + comboBoxId.height + 4
+            popup.visible = true;
+            popup.requestActivate();
         }
     }
 
@@ -130,5 +65,10 @@ Rectangle {
                 break
             }
         }
+    }
+
+    Component {
+        id: languagePopupComponent
+        LanguagePopup {}
     }
 }

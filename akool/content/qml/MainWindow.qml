@@ -445,7 +445,7 @@ WindowBase {
                             var targetLanguages = mainController.createListModel(selectLanguageBtn)
                             mainController.getTranslateLanguageList(sourceLanguages, targetLanguages)
                             if (sourceLanguages.count === 0 || targetLanguages === 0) {
-                                mainController.showMessage()()("There is no language")
+                                mainController.showMessage("There is no language")
                                 return
                             }
 

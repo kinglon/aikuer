@@ -31,8 +31,9 @@
         <file>content/res/icon_arrowdown.png</file>
         <file>content/qml/MessageBox.qml</file>
         <file>content/res/no_camera_bg.png</file>
+        <file>content/qml/LanguagePopup.qml</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>
-    <qresource prefix="/qml" lang="cn"/>
+    <qresource lang="cn" prefix="/qml"/>
 </RCC>
