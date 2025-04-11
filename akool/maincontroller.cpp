@@ -56,13 +56,15 @@ void MainController::run()
     connect(&m_meetingController, &MeetingController::hasError, this, &MainController::showMessage);
     m_meetingController.run();
 
+    m_avatarVideoPlayer.start();
+
     m_ipcWorker.setKey(IPC_KEY);
     connect(&m_ipcWorker, &IpcWorker::ipcDataArrive, this, &MainController::onIpcDataArrive);
     m_ipcWorker.start();
 
-    // 启动的时候，已经选择avatar，就开始聊天
     if (!StatusManager::getInstance()->m_avatarId.isEmpty())
     {
+        // 启动的时候，已经选择avatar，就开始聊天
         m_meetingController.beginChat();
         emit chattingStatusChange(true);
     }
@@ -82,9 +84,21 @@ QString MainController::avatarListToJsonString(const QVector<Avatar>& avatars)
     return QString::fromUtf8(jsonDocument.toJson());
 }
 
+void MainController::playAvatarVideo()
+{
+    Avatar avatar = m_avatarController.getAvatar(StatusManager::getInstance()->m_avatarId);
+    if (avatar.m_localVideoPath.isEmpty())
+    {
+        return;
+    }
+
+    m_avatarVideoPlayer.setVideoFilePath(avatar.m_localVideoPath);
+    m_avatarVideoPlayer.play();
+}
+
 QString MainController::getAvatars()
 {
-    QVector<Avatar> avatars = m_avatarController.getAvatars();
+    QVector<Avatar> avatars = m_avatarController.getDownloadedAvatars();
     return avatarListToJsonString(avatars);
 }
 
@@ -95,7 +109,7 @@ QString MainController::getSelAvatarId()
 
 void MainController::setSelAvatarId(QString avatarId)
 {
-    QVector<Avatar> avatars = m_avatarController.getAvatars();
+    QVector<Avatar> avatars = m_avatarController.getDownloadedAvatars();
     for (const auto& avatar : avatars)
     {
         if (avatar.m_avatarId == avatarId)
@@ -104,6 +118,11 @@ void MainController::setSelAvatarId(QString avatarId)
             StatusManager::getInstance()->m_avatarIdForService = avatar.m_avatarIdForService;
             break;
         }
+    }
+
+    if (!m_meetingController.isChatting())
+    {
+        playAvatarVideo();
     }
 }
 
@@ -118,6 +137,15 @@ bool MainController::switchMeetingMode(int meetingMode)
     else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
     {
         m_meetingController.enableCamera(StatusManager::getInstance()->m_enableCamera);
+    }
+
+    if (meetingMode == MEETING_MODE_SA)
+    {
+        playAvatarVideo();
+    }
+    else
+    {
+        m_avatarVideoPlayer.pause();
     }
 
     return true;
@@ -166,12 +194,18 @@ bool MainController::beginChat()
         }
     }
 
+    m_avatarVideoPlayer.pause();
     m_meetingController.beginChat();
     return true;
 }
 
 void MainController::stopChat()
 {
+    if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
+    {
+        playAvatarVideo();
+    }
+
     m_meetingController.stopChat();
     StatusManager::getInstance()->m_meetingEndTime = 0;
 }

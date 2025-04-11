@@ -6,6 +6,7 @@
 #include "avatarcontroller.h"
 #include "meetingcontroller.h"
 #include "translatelanguagecontroller.h"
+#include "myvideoplayer.h"
 #include "ipcworker.h"
 
 #define IPC_KEY  "{4ED33E4A-ee3A-920A-8523-158D74420098}"
@@ -26,6 +27,7 @@ public:
 
     MeetingController& getMeetingController() { return m_meetingController; }
     AvatarController& getAvatarController() { return m_avatarController; }
+    MyVideoPlayer& getAvatarVideoPlayer() { return m_avatarVideoPlayer; }
 
 public: // QML调用接口
     // 获取所有可用avatars，返回JSON串
@@ -68,12 +70,16 @@ private slots:
 private:
     QString avatarListToJsonString(const QVector<Avatar>& avatars);
 
+    void playAvatarVideo();
+
 private:
     AvatarController m_avatarController;
 
     TranslateLanguageController m_tlController;
 
     MeetingController m_meetingController;
+
+    MyVideoPlayer m_avatarVideoPlayer;
 
     IpcWorker m_ipcWorker;
 };

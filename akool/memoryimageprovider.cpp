@@ -1,4 +1,5 @@
 ﻿#include "memoryimageprovider.h"
+#include "statusmanager.h"
 
 QImage MemoryImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
@@ -19,15 +20,25 @@ QImage MemoryImageProvider::requestImage(const QString &id, QSize *size, const Q
         }
         else
         {
-            // todo by yejinlong, 有选择avatar就播放avatar视频
-
-            // 默认等待播放图片
-            static QImage waitingImage;
-            if (waitingImage.isNull())
+            if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_SA)
             {
-                waitingImage.load(":/content/res/waiting_play.png");
+                QImage avatarImage = m_mainController->getAvatarVideoPlayer().getCurrentVideoFrame();
+                if (!avatarImage.isNull())
+                {
+                    retImage = &avatarImage;
+                }
             }
-            retImage = &waitingImage;
+
+            if (retImage == nullptr)
+            {
+                // 默认等待播放图片
+                static QImage waitingImage;
+                if (waitingImage.isNull())
+                {
+                    waitingImage.load(":/content/res/waiting_play.png");
+                }
+                retImage = &waitingImage;
+            }
         }
     }
     else if (id == "cameraImage")

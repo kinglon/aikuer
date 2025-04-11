@@ -29,6 +29,7 @@ void AvatarController::run()
         return;
     }
 
+    m_currentStep = STEP_GET_AVATAR_LIST;
     getAvatarListFromServer();
 
     QTimer* timer = new QTimer(this);
@@ -36,7 +37,7 @@ void AvatarController::run()
     timer->start(1000);
 }
 
-QVector<Avatar> AvatarController::getAvatars()
+QVector<Avatar> AvatarController::getDownloadedAvatars()
 {
     QVector<Avatar> avatars;
     for (const auto& avatar : m_avatars)
@@ -50,30 +51,41 @@ QVector<Avatar> AvatarController::getAvatars()
     return avatars;
 }
 
+Avatar AvatarController::getAvatar(const QString& avatarId)
+{
+    for (const auto& item : m_avatars)
+    {
+        if (item.m_avatarId == avatarId)
+        {
+            return item;
+        }
+    }
+
+    return Avatar();
+}
+
 void AvatarController::onMainTimer()
 {
-    if (!m_getAvatarListSuccess)
+    if (m_currentStep == STEP_FINISH)
     {
-        if (!m_isGettingAvatarList)
+        auto timer = qobject_cast<QTimer *>(sender());
+        if (timer)
         {
-            getAvatarListFromServer();
+            timer->stop();
         }
 
-        return;
+        emit runFinish();
     }
 
-    if (!isAvatarDownloadFinish())
+    // 失败重试
+    if (m_currentStep == STEP_GET_AVATAR_LIST && !m_currentStepOnGoing)
     {
-        return;
+        getAvatarListFromServer();
     }
-
-    auto timer = qobject_cast<QTimer *>(sender());
-    if (timer)
+    else if (m_currentStep == STEP_DOWNLOAD_FILE && !m_currentStepOnGoing)
     {
-        timer->stop();
+        downloadAvatarFile();
     }
-
-    emit runFinish();
 }
 
 void AvatarController::getAvatarListFromServer()
@@ -90,18 +102,21 @@ void AvatarController::getAvatarListFromServer()
     request.setRawHeader("Authorization", bearerToken.toUtf8());
     m_networkAccessManager.get(request);
 
-    m_isGettingAvatarList = true;
+    m_currentStepOnGoing = true;
 }
 
 void AvatarController::onHttpResponse(QNetworkReply *reply)
 {
-    m_getAvatarListSuccess = handleGetAvatarListResponse(reply);
-    m_isGettingAvatarList = false;
-
-    if (m_getAvatarListSuccess)
+    m_currentStepOnGoing = false;
+    if (!handleGetAvatarListResponse(reply))
     {
-        m_nextAvatarIndex = 0;
-        downloadAvatarImage();
+        return;
+    }
+
+    if (m_currentStep == STEP_GET_AVATAR_LIST)
+    {
+        m_currentStep = STEP_DOWNLOAD_FILE;
+        downloadAvatarFile();
     }
 }
 
@@ -151,7 +166,8 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
     for (auto avatar : avatar_result)
     {
         QJsonObject avatarJson = avatar.toObject();
-        if (!avatarJson.contains("_id") || !avatarJson.contains("avatar_id") || !avatarJson.contains("thumbnailUrl"))
+        if (!avatarJson.contains("_id") || !avatarJson.contains("avatar_id")
+                || !avatarJson.contains("thumbnailUrl") || !avatarJson.contains("url"))
         {
             continue;
         }
@@ -160,13 +176,21 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
         avata.m_avatarId = avatarJson["_id"].toString();
         avata.m_avatarIdForService = avatarJson["avatar_id"].toString();
         avata.m_avatarImageUrl = avatarJson["thumbnailUrl"].toString();
+        avata.m_avatarVideoUrl = avatarJson["url"].toString();
         if (avata.isValid())
         {            
-            QString localAvatarImagePath = m_avatarPath + avata.m_avatarId;
+            QString localAvatarImagePath = m_avatarPath + avata.getLocalImageFileName();
             if (QFile::exists(localAvatarImagePath))
             {
                 avata.m_localImagePath = localAvatarImagePath;
             }
+
+            QString localAvatarVideoPath = m_avatarPath + avata.getLocalVideoFileName();
+            if (QFile::exists(localAvatarVideoPath))
+            {
+                avata.m_localVideoPath = localAvatarVideoPath;
+            }
+
             m_avatars.append(avata);
         }
     }    
@@ -189,85 +213,98 @@ bool AvatarController::handleGetAvatarListResponse(QNetworkReply *reply)
     return true;
 }
 
-void AvatarController::downloadAvatarImage()
+void AvatarController::downloadAvatarFile()
 {
-    if (m_avatars.empty())
+    Avatar nextAvatar;
+    for (const auto& avatar : m_avatars)
     {
-        return;
-    }
-
-    if (isAvatarDownloadFinish())
-    {
-        return;
-    }
-
-    // 获取下一个待下载索引
-    for (; m_nextAvatarIndex < m_avatars.size(); m_nextAvatarIndex++)
-    {
-        if (!m_avatars[m_nextAvatarIndex].isDownloaded())
+        if (!avatar.isDownloaded())
         {
+            nextAvatar = avatar;
             break;
         }
     }
-    if (m_nextAvatarIndex >= m_avatars.size())
+    if (!nextAvatar.isValid())
     {
+        m_currentStep = STEP_FINISH;
         return;
     }
 
-    Avatar avatar = m_avatars[m_nextAvatarIndex];
-    QString localAvatarImagePath = m_avatarPath + avatar.m_avatarId;
+    bool downloadImage = false;
+    QString downloadUrl;
+    QString localDownloadPath;
+    if (nextAvatar.m_localImagePath.isEmpty())
+    {
+        downloadImage = true;
+        downloadUrl = nextAvatar.m_avatarImageUrl;
+        localDownloadPath = m_avatarPath + nextAvatar.getLocalImageFileName();
+    }
+    else
+    {
+        downloadImage = false;
+        downloadUrl = nextAvatar.m_avatarVideoUrl;
+        localDownloadPath = m_avatarPath + nextAvatar.getLocalVideoFileName();
+    }
 
     FileDownloader* fileDownloader = new FileDownloader();
-    fileDownloader->setDownloadUrl(avatar.m_avatarImageUrl);
-    fileDownloader->setSaveFilePath(localAvatarImagePath);
-    QString avatarId = avatar.m_avatarId;
+    fileDownloader->setDownloadUrl(downloadUrl);
+    fileDownloader->setSaveFilePath(localDownloadPath);
+    QString avatarId = nextAvatar.m_avatarId;
     connect(fileDownloader, &FileDownloader::runFinish,
-            [this, avatarId, localAvatarImagePath, fileDownloader](bool ok) {
+            [this, avatarId, downloadImage, localDownloadPath, fileDownloader](bool ok) {
         if (ok)
         {
-            qInfo("successful to download avatar for %s", avatarId.toStdString().c_str());
+            if (downloadImage)
+            {
+                qInfo("successful to download avatar image for %s", avatarId.toStdString().c_str());
+            }
+            else
+            {
+                qInfo("successful to download avatar video for %s", avatarId.toStdString().c_str());
+            }
 
             for (auto& avatar : m_avatars)
             {
                 if (avatar.m_avatarId == avatarId)
                 {
-                    avatar.m_localImagePath = localAvatarImagePath;
-                    QVector<Avatar> avatars;
-                    avatars.append(avatar);
-                    emit avatarDownloadCompletely(avatars);
+                    if (downloadImage)
+                    {
+                        avatar.m_localImagePath = localDownloadPath;
+                    }
+                    else
+                    {
+                        avatar.m_localVideoPath = localDownloadPath;
+                    }
+
+                    if (avatar.isDownloaded())
+                    {
+                        QVector<Avatar> avatars;
+                        avatars.append(avatar);
+                        emit avatarDownloadCompletely(avatars);
+                    }
+
                     break;
                 }
             }
+
+            downloadAvatarFile();
         }
         else
         {
-            qInfo("failed to download avatar for %s", avatarId.toStdString().c_str());
+            qInfo("failed to download avatar file for %s", avatarId.toStdString().c_str());
+            m_currentStepOnGoing = false;
         }
-
-        m_nextAvatarIndex++;
-        downloadAvatarImage();
 
         fileDownloader->deleteLater();
     });
 
-    qInfo("avatar download url: %s", avatar.m_avatarImageUrl.toStdString().c_str());
+    qInfo("avatar download url: %s", downloadUrl.toStdString().c_str());
     if (!fileDownloader->run())
     {
         fileDownloader->deleteLater();
     }
-}
-
-bool AvatarController::isAvatarDownloadFinish()
-{
-    bool finish = true;
-    for (auto& avatar : m_avatars)
+    else
     {
-        if (!avatar.isDownloaded())
-        {
-            finish = false;
-            break;
-        }
+        m_currentStepOnGoing = true;
     }
-
-    return finish;
 }

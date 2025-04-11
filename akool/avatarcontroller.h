@@ -40,7 +40,17 @@ public:
 
     bool isDownloaded() const
     {
-        return !m_localImagePath.isEmpty();
+        return !m_localImagePath.isEmpty() && !m_localVideoPath.isEmpty();
+    }
+
+    QString getLocalImageFileName() const
+    {
+        return m_avatarId;
+    }
+
+    QString getLocalVideoFileName() const
+    {
+        return m_avatarId + "_video";
     }
 };
 
@@ -51,6 +61,8 @@ class AvatarController : public HttpClientBase
     enum {
         STEP_INIT = 1,
         STEP_GET_AVATAR_LIST = 2,
+        STEP_DOWNLOAD_FILE = 3,
+        STEP_FINISH = 4
     };
 
 public:
@@ -60,7 +72,9 @@ public:
     void run();
 
     // 获取已下载好的avatar
-    QVector<Avatar> getAvatars();
+    QVector<Avatar> getDownloadedAvatars();
+
+    Avatar getAvatar(const QString& avatarId);
 
 signals:
     void runFinish();
@@ -75,10 +89,7 @@ private:
 
     bool handleGetAvatarListResponse(QNetworkReply *reply);
 
-    void downloadAvatarImage();
-
-    // 是否所有的avatar都下载了
-    bool isAvatarDownloadFinish();
+    void downloadAvatarFile();
 
 private slots:
     void onMainTimer();
@@ -87,14 +98,14 @@ private:
     // avatar图片存放路径，尾部有后划线
     QString m_avatarPath;
 
+    // avatar列表
     QVector<Avatar> m_avatars;
 
-    // 获取avatar列表的状态
-    bool m_isGettingAvatarList = false;
-    bool m_getAvatarListSuccess = false;
+    // 当前步骤
+    int m_currentStep = STEP_INIT;
 
-    // 下一个下载的索引
-    int m_nextAvatarIndex = 0;
+    // 标志当前步骤是否正在进行
+    bool m_currentStepOnGoing = false;
 };
 
 #endif // AVATARCONTROLLER_H

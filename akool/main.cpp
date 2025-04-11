@@ -13,6 +13,10 @@
 #include <QOpenGLFunctions>
 #include <QQuickWindow>
 
+extern "C" {
+#include <libavutil/log.h>
+}
+
 CLogUtil* g_dllLog = nullptr;
 
 QtMessageHandler originalHandler = nullptr;
@@ -40,6 +44,29 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
     {
         (*originalHandler)(type, context, msg);
     }
+}
+
+// ffmpeg log callback function
+void ffmpeg_log_callback(void* ptr, int level, const char* fmt, va_list vl)
+{
+    if (level > AV_LOG_ERROR)
+    {
+        return;
+    }
+
+    if (strstr(fmt, "frame dropped"))
+    {
+        return;
+    }
+
+    // Define the maximum log message length
+    constexpr int MAX_LOG_LENGTH = 1024;
+    char log_message[MAX_LOG_LENGTH];
+
+    // Format the log message
+    static int print_prefix = 1;
+    av_log_format_line(ptr, level, fmt, vl, log_message, MAX_LOG_LENGTH, &print_prefix);
+    qDebug(log_message);
 }
 
 bool isOpenGLSupported()
@@ -87,16 +114,16 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // 日志
     g_dllLog = CLogUtil::GetLog(L"main");
+    int nLogLevel = SettingManager::getInstance()->m_nLogLevel;
+    g_dllLog->SetLogLevel((ELogLevel)nLogLevel);
+    originalHandler = qInstallMessageHandler(logToFile);
+    av_log_set_callback(ffmpeg_log_callback);
 
     // 初始化崩溃转储机制
     CDumpUtil::SetDumpFilePath(CImPath::GetDumpPath().c_str());
     CDumpUtil::Enable(true);
-
-    // 设置日志级别
-    int nLogLevel = SettingManager::getInstance()->m_nLogLevel;
-    g_dllLog->SetLogLevel((ELogLevel)nLogLevel);
-    originalHandler = qInstallMessageHandler(logToFile);
 
     qputenv("QT_FONT_DPI", "100");
 

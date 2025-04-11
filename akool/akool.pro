@@ -15,12 +15,14 @@ SOURCES += \
         ../Utility/httpclientbase.cpp \
         avatarcontroller.cpp \
         echoremover.cpp \
+        ffmpegutil.cpp \
         filedownloader.cpp \
         ipcworker.cpp \
         main.cpp \
         maincontroller.cpp \
         meetingcontroller.cpp \
         memoryimageprovider.cpp \
+        myvideoplayer.cpp \
         settingmanager.cpp \
         statusmanager.cpp \
         translatelanguagecontroller.cpp \
@@ -59,11 +61,13 @@ HEADERS += \
     ../Utility/httpclientbase.h \
     avatarcontroller.h \
     echoremover.h \
+    ffmpegutil.h \
     filedownloader.h \
     ipcworker.h \
     maincontroller.h \
     meetingcontroller.h \
     memoryimageprovider.h \
+    myvideoplayer.h \
     settingmanager.h \
     statusmanager.h \
     translatelanguagecontroller.h \

@@ -14,29 +14,6 @@ extern "C" {
 #define AUDIO_FRAME_CHANNELS 2
 #define AUDIO_FRAME_SAMPLES_PER_SEC 44100
 
-// Custom log callback function
-void custom_log_callback(void* ptr, int level, const char* fmt, va_list vl)
-{
-    if (level > AV_LOG_ERROR)
-    {
-        return;
-    }
-
-    if (strstr(fmt, "frame dropped"))
-    {
-        return;
-    }
-
-    // Define the maximum log message length
-    constexpr int MAX_LOG_LENGTH = 1024;
-    char log_message[MAX_LOG_LENGTH];
-
-    // Format the log message
-    static int print_prefix = 1;
-    av_log_format_line(ptr, level, fmt, vl, log_message, MAX_LOG_LENGTH, &print_prefix);
-    qDebug(log_message);
-}
-
 EchoRemover::EchoRemover(QObject *parent)
     : QThread{parent}
 {
@@ -85,8 +62,7 @@ void EchoRemover::run()
 
     // 初始化FFmpeg    
     avdevice_register_all();
-    avformat_network_init();
-    av_log_set_callback(custom_log_callback); // Set the custom log callback function
+    avformat_network_init();    
 
     // 打开麦克风设备
     AVFormatContext* formatContext = nullptr;
