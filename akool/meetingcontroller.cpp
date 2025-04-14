@@ -281,10 +281,7 @@ bool MeetingController::joinChannel(const QString& appId, const QString& token, 
     {
         options.publishCustomAudioTrack = true;
         options.publishCustomAudioTrackId = m_audioTrackId;
-    }
-
-    // 声网dump回音消除内部的音频文件
-    //m_rtcEngine->setParameters("{\"che.audio.frame_dump\": true}");
+    }    
 
     int ret = m_rtcEngine->joinChannel(token.toStdString().c_str(),
                              channel.toStdString().c_str(),
@@ -405,6 +402,11 @@ bool MeetingController::initAgoraSdk(QString appId)
         }
 
         // 去除扬声器声音
+        if (SettingManager::getInstance()->m_debugEcho)
+        {
+            // dump推送给声网的音频文件
+            m_rtcEngine->setParameters("{\"che.audio.frame_dump\": true}");
+        }
         agora::rtc::AudioTrackConfig config;
         m_audioTrackId = mediaEngine->createCustomAudioTrack(agora::rtc::AUDIO_TRACK_EXTERNAL_AEC_REFERENCE, config);
         if (m_audioTrackId == INVALID_TRACK_ID)

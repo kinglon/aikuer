@@ -1,4 +1,5 @@
 ﻿#include "echoremover.h"
+#include "settingmanager.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -71,6 +72,7 @@ void EchoRemover::run()
     const AVInputFormat* format = av_find_input_format("dshow");
     AVDictionary *options = nullptr;
     av_dict_set(&options, "rw_timeout", "2000000", 0); // 2秒超时
+    av_dict_set(&options, "audio_buffer_size", "30", 0);
     int result = avformat_open_input(&formatContext, audioDeviceName.c_str(), format, &options);
     if (result != 0)
     {
@@ -144,6 +146,8 @@ void EchoRemover::run()
     // 读取音频数据
     AVPacket packet;
     AVFrame* frame = av_frame_alloc();
+    qint64 lastReadTime = 0;
+    bool debugEcho = SettingManager::getInstance()->m_debugEcho;
     while (true)
     {
         if (!m_enabled)
@@ -152,9 +156,15 @@ void EchoRemover::run()
             continue;
         }
 
-        qDebug("av_read_frame begin");
+        if (lastReadTime > 0)
+        {
+            if (debugEcho)
+            {
+                qInfo("the interval of reading virtual microphone: %d", GetTickCount64()-lastReadTime);
+            }
+        }
+        lastReadTime = GetTickCount64();
         result = av_read_frame(formatContext, &packet);
-        qDebug("av_read_frame end");
         if (result < 0)
         {
             if (result == AVERROR(EAGAIN))
@@ -190,13 +200,16 @@ void EchoRemover::run()
 
                 // 把声音推送到声网回声识别系统
                 int result = mediaEngine.get()->pushAudioFrame(&audioFrame, m_audioTrackId);
-                if (result < 0)
+                if (debugEcho)
                 {
-                    qDebug("failed to call pushAudioFrame, error: %d", result);
-                }
-                else
-                {
-                    qDebug("successful to call pushAudioFrame");
+                    if (result < 0)
+                    {
+                        qDebug("failed to call pushAudioFrame, error: %d", result);
+                    }
+                    else
+                    {
+                        qDebug("successful to call pushAudioFrame");
+                    }
                 }
                 free(audioFrame.buffer);
 
@@ -208,10 +221,8 @@ void EchoRemover::run()
                 waveHdr->dwFlags = 0;
                 mmresult = waveOutPrepareHeader(hWaveOut, waveHdr, sizeof(WAVEHDR));
                 if (mmresult == MMSYSERR_NOERROR)
-                {
-                    qDebug("waveOutWrite begin");
+                {                    
                     mmresult = waveOutWrite(hWaveOut, waveHdr, sizeof(WAVEHDR));
-                    qDebug("waveOutWrite end");
                 }
 
                 if (mmresult != MMSYSERR_NOERROR)

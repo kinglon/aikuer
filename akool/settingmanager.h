@@ -30,4 +30,7 @@ public:
     QString m_targetLanguageId;
     QString m_sourceLanguageCode;
     QString m_targetLanguageCode;
+
+    // 标志是否开启调试回声
+    bool m_debugEcho = false;
 };

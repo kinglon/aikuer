@@ -1,4 +1,6 @@
 {   
     "log_level":2,
-    "host": "https://akool.com/interface/content-api"
+    "host": "https://landing-test.akool.io/interface/content-api",
+	"host2": "https://akool.com/interface/content-api",
+	"debugEcho": false
 }

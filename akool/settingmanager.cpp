@@ -38,6 +38,7 @@ void SettingManager::Load()
     m_targetLanguageId = root["targetLanguageId"].toString();
     m_sourceLanguageCode = root["sourceLanguageCode"].toString();
     m_targetLanguageCode = root["targetLanguageCode"].toString();
+    m_debugEcho = root["debugEcho"].toBool();
 }
 
 void SettingManager::save()
@@ -49,6 +50,7 @@ void SettingManager::save()
     root["targetLanguageId"] = m_targetLanguageId;
     root["sourceLanguageCode"] = m_sourceLanguageCode;
     root["targetLanguageCode"] = m_targetLanguageCode;
+    root["debugEcho"] = m_debugEcho;
 
     QJsonDocument jsonDocument(root);
     QByteArray jsonData = jsonDocument.toJson(QJsonDocument::Indented);
