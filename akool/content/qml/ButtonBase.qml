@@ -5,7 +5,7 @@ Button {
     width: 100
     height: 100
     // text: "确定"
-    font.pixelSize: 12
+    font.pixelSize: 18
     font.weight: Font.Medium
     palette.buttonText: textNormalColor
     display: AbstractButton.TextBesideIcon
@@ -27,7 +27,7 @@ Button {
     property int borderWidth: 0 // 默认边框宽度
     property int disableBorderWidth: 0 // 禁用状态下边框宽度
     property int normalBorderWidth: 0 // 正常状态下边框宽度
-    property int borderRadius: 10
+    property int borderRadius: 15
 
     function updateButtonStatus() {
         if (!enabled) {

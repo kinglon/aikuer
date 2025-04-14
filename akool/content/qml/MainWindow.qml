@@ -6,10 +6,10 @@ import QtGraphicalEffects 1.15
 
 WindowBase {
     id: mainWindow
-    width: 805
-    height: 650
-    minimumWidth: 805
-    minimumHeight: 650
+    width: 1250
+    height: 905
+    minimumWidth: 1250
+    minimumHeight: 905
     backgroundColor: "#0B0B0D"
 
     // 当使用系统标题栏的时候，窗口显示的时候先白屏，再显示QML的内容，体验不好，所以先不显示，加载后再显示
@@ -26,22 +26,22 @@ WindowBase {
         // 顶部按钮区域
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 96
+            Layout.preferredHeight: 144
             color: "transparent"
 
             // 标签页头部
             Rectangle {
-                width: 488
-                height: 48
+                width: 731
+                height: 72
                 color: "#0B0B0D"
                 border.color: "#1AF5F5F7"
-                border.width: 1
-                radius: 24
+                border.width: 2
+                radius: 36
                 anchors.centerIn: parent
 
                 Rectangle {
-                    width: parent.width-16
-                    height: parent.height-16
+                    width: parent.width-24
+                    height: parent.height-24
                     anchors.centerIn: parent
                     color: "transparent"
 
@@ -55,7 +55,7 @@ WindowBase {
                         isSelected: mainWindow.currentMeetingMode==1
                         icon.source: "qrc:/content/res/icon_rtt.png"
                         display: AbstractButton.TextBesideIcon
-                        spacing: 6
+                        spacing: 9
 
                         onClicked: {
                             mainWindow.switchMeetingMode(1)
@@ -72,7 +72,7 @@ WindowBase {
                         isSelected: mainWindow.currentMeetingMode==2
                         icon.source: "qrc:/content/res/icon_streamavatar.png"
                         display: AbstractButton.TextBesideIcon
-                        spacing: 6
+                        spacing: 9
 
                         onClicked: {
                             mainWindow.switchMeetingMode(2)
@@ -90,7 +90,7 @@ WindowBase {
                         isSelected: mainWindow.currentMeetingMode==3
                         icon.source: "qrc:/content/res/icon_livefaceswap.png"
                         display: AbstractButton.TextBesideIcon
-                        spacing: 6
+                        spacing: 9
 
                         onClicked: {
                             mainWindow.switchMeetingMode(3)
@@ -102,14 +102,14 @@ WindowBase {
             // 反馈按钮
             ButtonBase {
                 id: feedBackButton
-                width: 20
-                height: 20
+                width: 42
+                height: 42
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                anchors.rightMargin: 28
+                anchors.rightMargin: 36
                 icon.source: "qrc:/content/res/icon_feedback.png"
                 display: AbstractButton.IconOnly
-                borderRadius: 2
+                borderRadius: 9
                 padding: 0
 
                 onClicked: {
@@ -147,21 +147,21 @@ WindowBase {
             // 左上角的剩余时长
             Rectangle {
                 id: durationArea
-                width: 89
-                height: 48
+                width: 133
+                height: 72
                 anchors.top: parent.top
-                anchors.topMargin: 12
+                anchors.topMargin: 18
                 anchors.left: parent.left
-                anchors.leftMargin: 12
+                anchors.leftMargin: 18
                 color: "#990A0A11"
                 radius: height/2
 
                 Image {
                     id: durationIcon
-                    width: 24
-                    height: 24
+                    width: 27
+                    height: 26
                     anchors.left: parent.left
-                    anchors.leftMargin: 8
+                    anchors.leftMargin: 22
                     anchors.verticalCenter: parent.verticalCenter
                     fillMode: Image.PreserveAspectFit
                     source: "qrc:/content/res/icon_duration.png"
@@ -170,9 +170,10 @@ WindowBase {
                 Text {
                     id: durationText
                     anchors.left: durationIcon.right
+                    anchors.leftMargin: 9
                     anchors.verticalCenter: parent.verticalCenter
                     text: "00 : 00"
-                    font.pixelSize: 12
+                    font.pixelSize: 18
                     font.weight: Font.Medium
                     color: "#F5F5F7"
                 }
@@ -192,15 +193,15 @@ WindowBase {
             Item {
                 id: cameraDisplayArea
                 visible: rttBtn.isSelected
-                width: 280
-                height: 156
+                width: 420
+                height: 234
                 anchors.top: parent.top
-                anchors.topMargin: 12
+                anchors.topMargin: 18
                 anchors.right: parent.right
-                anchors.rightMargin: 12
+                anchors.rightMargin: 18
 
-                property int borderWidth: 2
-                property int borderRadius: 15
+                property int borderWidth: 3
+                property int borderRadius: 22
                 property color borderColor: "#59F5F5F7"
 
                 // 摄像头禁用时显示
@@ -213,11 +214,11 @@ WindowBase {
                     color: "#0A0A11"
 
                     Image {
-                        width: 42
-                        height: 43
+                        width: 63
+                        height: 64
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.top
-                        anchors.topMargin: 42
+                        anchors.topMargin: 63
                         source: "qrc:/content/res/icon_camera_disable_big.png"
                         fillMode: Image.PreserveAspectFit
                     }
@@ -225,10 +226,10 @@ WindowBase {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 42
+                        anchors.bottomMargin: 63
                         text: "Click allow to access camera"
                         color: "#F5F5F7"
-                        font.pixelSize: 16
+                        font.pixelSize: 24
                         font.weight: Font.Medium
                     }
                 }
@@ -290,22 +291,22 @@ WindowBase {
             // 工具栏
             Rectangle {
                 id: toolbarArea
-                width: parent.width-12*2
-                height: 80
+                width: parent.width-18*2
+                height: 120
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 12
+                anchors.bottomMargin: 18
                 color: "#D00A0A11"
-                radius: 10
+                radius: 15
 
                 // 开始按钮
                 ButtonBase {
                     id: startBtn
-                    width: 59
-                    height: 36
+                    width: 90
+                    height: 54
                     text: isChatting?"Stop":"Start"
                     anchors.centerIn: parent
-                    borderRadius: 8
+                    borderRadius: 12
                     bgNormalColor: isChatting?"#DC4D48":"#7861FA"
                     bgClickColor: isChatting?"#CC3D38":"#6851E0"
                     bgHoverColor: bgClickColor
@@ -334,16 +335,18 @@ WindowBase {
                     // 选择Avatar按钮
                     ButtonBase {
                         id: selectAvatarBtn
-                        width: 72
-                        height: 56
+                        width: 108
+                        height: 84
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: parent.right
-                        anchors.rightMargin: 12
+                        anchors.rightMargin: 18
                         text: "Avatar"
-                        borderRadius: 8
+                        borderRadius: 12
                         icon.source: "qrc:/content/res/icon_avatar.png"
+                        icon.width: 37
+                        icon.height: 37
                         display: AbstractButton.TextUnderIcon
-                        spacing: 6
+                        spacing: 9
 
                         onClicked: {
                             chooseAvatarWindowComponent.createObject(mainWindow, {"mainController": mainController})
@@ -361,17 +364,19 @@ WindowBase {
                     ButtonBase {
                         id: cameraBtn
                         visible: true
-                        width: 72
-                        height: 56
+                        width: 108
+                        height: 84
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
-                        anchors.leftMargin: 12
+                        anchors.leftMargin: 18
                         text: "Camera"
                         textNormalColor: "#DC4D48"
-                        borderRadius: 8
+                        borderRadius: 12
                         icon.source: "qrc:/content/res/icon_camera_disable.png"
+                        icon.width: 36
+                        icon.height: 36
                         display: AbstractButton.TextUnderIcon
-                        spacing: 6
+                        spacing: 9
 
                         property bool cameraEnable: false
 
@@ -395,17 +400,19 @@ WindowBase {
                     ButtonBase {
                         id: microPhoneBtn
                         visible: true
-                        width: 72
-                        height: 56
+                        width: 108
+                        height: 84
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: cameraBtn.right
-                        anchors.leftMargin: 12
+                        anchors.leftMargin: 18
                         text: "Mic"
                         textNormalColor: "#DC4D48"
-                        borderRadius: 8
+                        borderRadius: 12
                         icon.source: "qrc:/content/res/icon_microphone_disable.png"
+                        icon.width: 36
+                        icon.height: 36
                         display: AbstractButton.TextUnderIcon
-                        spacing: 6
+                        spacing: 9
 
                         property bool microPhoneEnable: false
 
@@ -429,16 +436,18 @@ WindowBase {
                     ButtonBase {
                         id: selectLanguageBtn
                         visible: true
-                        width: 120
-                        height: 56
+                        width: 180
+                        height: 84
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: parent.right
-                        anchors.rightMargin: 12
+                        anchors.rightMargin: 18
                         text: "Target Language"
-                        borderRadius: 8
+                        borderRadius: 12
                         icon.source: "qrc:/content/res/icon_language.png"
+                        icon.width: 36
+                        icon.height: 36
                         display: AbstractButton.TextUnderIcon
-                        spacing: 6
+                        spacing: 9
 
                         onClicked: {
                             var sourceLanguages = mainController.createListModel(selectLanguageBtn)
@@ -462,7 +471,7 @@ WindowBase {
                 id: messageBox
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: toolbarArea.top
-                anchors.bottomMargin: 12
+                anchors.bottomMargin: 18
             }
         }
     }

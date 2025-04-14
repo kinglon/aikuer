@@ -5,9 +5,9 @@ import QtGraphicalEffects 1.15
 Rectangle {
     id: messageBox
     color: "#DC4D48"
-    radius: 8
+    radius: 12
     width: getFixedWidth() + messageContent.width
-    height: 44
+    height: 66
     visible: false
 
     function getFixedWidth() {
@@ -25,10 +25,10 @@ Rectangle {
     Image {
         id: messageIcon
         anchors.verticalCenter: parent.verticalCenter
-        width: 20
-        height: 20
+        width: 30
+        height: 30
         anchors.left: parent.left
-        anchors.leftMargin: 13
+        anchors.leftMargin: 19
         source: "qrc:/content/res/icon_toast_info.png"
         fillMode: Image.PreserveAspectFit
     }
@@ -38,31 +38,31 @@ Rectangle {
         color: "#F5F5F7"
         height: parent.height
         anchors.left: messageIcon.right
-        anchors.leftMargin: 6
+        anchors.leftMargin: 9
         text: ""
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
-        font.pixelSize: 14
+        font.pixelSize: 21
         font.weight: Font.Medium
     }
 
     Rectangle {
         id: messageDivider
         color: "#33F5F5F7"
-        width: 1
-        height: 20
+        width: 2
+        height: 30
         anchors.left: messageContent.right
-        anchors.leftMargin: 13
+        anchors.leftMargin: 19
         anchors.verticalCenter: parent.verticalCenter
     }
 
     Image {
         id: messageCloseButton
         anchors.verticalCenter: parent.verticalCenter
-        width: 12
-        height: 12
+        width: 30
+        height: 30
         anchors.left: messageDivider.right
-        anchors.leftMargin: 13
+        anchors.leftMargin: 19
         source: "../res/close_button.png"
         fillMode: Image.PreserveAspectFit
 
