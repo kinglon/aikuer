@@ -222,6 +222,11 @@ bool MeetingController::handleCreateSessionResponse(QNetworkReply *reply)
     m_meetingSessionId = root["data"].toObject()["_id"].toString();
 
     int allocateDuration = root["data"].toObject()["allocate_duration"].toInt();
+    // 服务器返回的时间会多1分钟，客户端需要减掉
+    if (allocateDuration > 60)
+    {
+        allocateDuration -= 60;
+    }
     qint64 meetingEndTime = GetTickCount64()/1000 + allocateDuration;
     StatusManager::getInstance()->m_meetingEndTime = meetingEndTime;
 
