@@ -10,6 +10,7 @@
 SettingManager::SettingManager()
 {
     Load();
+    Load2();
 }
 
 SettingManager* SettingManager::getInstance()
@@ -34,27 +35,40 @@ void SettingManager::Load()
     QJsonObject root = jsonDocument.object();
     m_nLogLevel = root["log_level"].toInt();
     m_host = root["host"].toString();
+    m_debugEcho = root["debugEcho"].toBool();
+}
+
+void SettingManager::Load2()
+{
+    std::wstring strConfFilePath = CImPath::GetDataPath() + L"configs.json";
+    QFile file(QString::fromStdWString(strConfFilePath));
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        LOG_ERROR(L"failed to open the configure file of data : %s", strConfFilePath.c_str());
+        return;
+    }
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonData);
+    QJsonObject root = jsonDocument.object();
     m_sourceLanguageId = root["sourceLanguageId"].toString();
     m_targetLanguageId = root["targetLanguageId"].toString();
     m_sourceLanguageCode = root["sourceLanguageCode"].toString();
     m_targetLanguageCode = root["targetLanguageCode"].toString();
-    m_debugEcho = root["debugEcho"].toBool();
 }
 
 void SettingManager::save()
 {
     QJsonObject root;
-    root["log_level"] = m_nLogLevel;
-    root["host"] = m_host;
     root["sourceLanguageId"] = m_sourceLanguageId;
     root["targetLanguageId"] = m_targetLanguageId;
     root["sourceLanguageCode"] = m_sourceLanguageCode;
     root["targetLanguageCode"] = m_targetLanguageCode;
-    root["debugEcho"] = m_debugEcho;
 
     QJsonDocument jsonDocument(root);
     QByteArray jsonData = jsonDocument.toJson(QJsonDocument::Indented);
-    std::wstring strConfFilePath = CImPath::GetConfPath() + L"configs.json";
+    std::wstring strConfFilePath = CImPath::GetDataPath() + L"configs.json";
     QFile file(QString::fromStdWString(strConfFilePath));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {

@@ -32,6 +32,7 @@
         <file>content/qml/MessageBox.qml</file>
         <file>content/res/no_camera_bg.png</file>
         <file>content/qml/LanguagePopup.qml</file>
+        <file>content/res/icon_voicecollect.png</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>

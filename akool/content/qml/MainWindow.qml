@@ -432,6 +432,28 @@ WindowBase {
                         }
                     }
 
+                    // 声音采集按钮
+                    ButtonBase {
+                        id: voiceCollectBtn
+                        visible: true
+                        width: 180
+                        height: 84
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: selectLanguageBtn.left
+                        anchors.rightMargin: 27
+                        text: "Voice Collection"
+                        borderRadius: 12
+                        icon.source: "qrc:/content/res/icon_voicecollect.png"
+                        icon.width: 37
+                        icon.height: 36
+                        display: AbstractButton.TextUnderIcon
+                        spacing: 9
+
+                        onClicked: {
+                            Qt.openUrlExternally("https://akool.com/apps/akool-camera/voice-collection")
+                        }
+                    }
+
                     // 选择语言按钮
                     ButtonBase {
                         id: selectLanguageBtn
