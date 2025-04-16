@@ -4,11 +4,11 @@ import QtQuick.Controls 2.15
 Rectangle {
     id: comboBoxId
     width: parent.width
-    height: 56
+    height: 84
     color: "transparent"
     border.color: "#24F5F5F7"
-    border.width: 1
-    radius: 16
+    border.width: 2
+    radius: 24
 
     // 下拉框数据 { id: "1", language: "Chinese", flagImagePath: "qrc:/content/res/icon_camera.png", isCurrent: false}
     property var model: null
@@ -23,20 +23,20 @@ Rectangle {
     Text {
         id: selectedText
         anchors.left: parent.left
-        anchors.leftMargin: 24
+        anchors.leftMargin: 36
         anchors.verticalCenter: parent.verticalCenter
         text: "Please select a language"
         color: "#F5F5F7"
-        font.pixelSize: 16
+        font.pixelSize: 24
         font.weight: Font.Medium
     }
 
     // 下拉箭头
     Image {
-        width: 20
-        height: 20
+        width: 30
+        height: 30
         anchors.right: parent.right
-        anchors.rightMargin: 24
+        anchors.rightMargin: 36
         anchors.verticalCenter: parent.verticalCenter
         source: "qrc:/content/res/icon_arrowdown.png"
     }
@@ -50,7 +50,7 @@ Rectangle {
                 popup = languagePopupComponent.createObject(null, {"comboBox": comboBoxId})
             }
             popup.x = globalPos.x
-            popup.y = globalPos.y + comboBoxId.height + 4
+            popup.y = globalPos.y + comboBoxId.height + 6
             popup.visible = true;
             popup.requestActivate();
         }

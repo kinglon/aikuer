@@ -4,12 +4,12 @@ import QtQuick.Layouts 1.15
 
 WindowBase {
     id: chooseLanguageWindow
-    width: 430
-    height: 310
-    maximumHeight: 310
-    maximumWidth: 430
-    minimumHeight: 310
-    minimumWidth: 430
+    width: 645
+    height: 465
+    maximumHeight: 465
+    maximumWidth: 645
+    minimumHeight: 465
+    minimumWidth: 645
     backgroundColor: "#15151A"
     hasMaxButton: false
     hasMinButton: false
@@ -27,7 +27,7 @@ WindowBase {
 
     Item  {
         parent: contentArea
-        width: parent.width-36*2
+        width: parent.width-54*2
         height: parent.height
         anchors.centerIn: parent
         
@@ -35,10 +35,10 @@ WindowBase {
             id: languageLabel
             anchors.left: parent.left
             anchors.top: parent.top
-            anchors.topMargin: 16
+            anchors.topMargin: 24
             text: "Language"
             color: "#8CEBEBED"
-            font.pixelSize: 14
+            font.pixelSize: 21
             font.weight: Font.Medium
         }
 
@@ -46,9 +46,9 @@ WindowBase {
         LanguageComboBox {
             id: languageComboBox
             width: parent.width
-            height: 56
+            height: 84
             anchors.top: languageLabel.bottom
-            anchors.topMargin: 4
+            anchors.topMargin: 6
             model: chooseLanguageWindow.sourceLanguageModel
         }
 
@@ -56,10 +56,10 @@ WindowBase {
             id: targetLanguageLabel
             anchors.left: parent.left
             anchors.top: languageComboBox.bottom
-            anchors.topMargin: 16
+            anchors.topMargin: 24
             text: "Target language"
             color: "#8CEBEBED"
-            font.pixelSize: 14
+            font.pixelSize: 21
             font.weight: Font.Medium
         }
 
@@ -67,26 +67,26 @@ WindowBase {
         LanguageComboBox {
             id: targetLanguageComboBox
             width: parent.width
-            height: 56
+            height: 84
             anchors.top: targetLanguageLabel.bottom
-            anchors.topMargin: 4
+            anchors.topMargin: 6
             model: chooseLanguageWindow.targetLanguageModel
         }
 
         // 确认按钮
         ButtonBase {
             id: confirmBtn
-            width: 98
-            height: 48
+            width: 138
+            height: 72
             text: "Translate"
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 36
+            anchors.bottomMargin: 54
             borderColor: "#24F5F5F7"
-            borderWidth: 1
-            borderRadius: 10
+            borderWidth: 2
+            borderRadius: 15
             bgNormalColor: "#7861FA"
-            disableBorderWidth: 1
+            disableBorderWidth: 2
 
             onClicked: {
                 if (languageComboBox.selLanguageId === "") {
@@ -106,17 +106,17 @@ WindowBase {
 
         // 取消按钮
         ButtonBase {
-            width: 84
-            height: 48
+            width: 126
+            height: 72
             text: "Cancel"
             anchors.right: confirmBtn.left
-            anchors.rightMargin: 24
+            anchors.rightMargin: 36
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 36
+            anchors.bottomMargin: 54
             borderColor: "#24F5F5F7"
-            borderWidth: 1
-            normalBorderWidth: 1
-            borderRadius: 10
+            borderWidth: 2
+            normalBorderWidth: 2
+            borderRadius: 15
 
             onClicked: {
                 chooseLanguageWindow.close()

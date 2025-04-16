@@ -4,12 +4,12 @@ import QtQuick.Layouts 1.15
 
 WindowBase {
     id: chooseAvatarWindow
-    width: 480
-    height: 480
-    maximumHeight: 480
-    maximumWidth: 480
-    minimumHeight: 480
-    minimumWidth: 480
+    width: 720
+    height: 720
+    maximumHeight: 720
+    maximumWidth: 720
+    minimumHeight: 720
+    minimumWidth: 720
     backgroundColor: "#131317"
     hasMaxButton: false
     hasMinButton: false
@@ -26,21 +26,21 @@ WindowBase {
 
     Item  {
         parent: contentArea
-        width: parent.width-36*2
+        width: parent.width-54*2
         height: parent.height
         anchors.centerIn: parent
         
         // Avatar列表
         Flickable {
-            property int itemSize: 96
+            property int itemSize: 144
             property int columnCount: 4
-            property int itemMargin: 4
+            property int itemMargin: 6
 
             id: avatarListArea
             width: parent.width
-            height: 312
+            height: 468
             anchors.top: parent.top
-            anchors.topMargin: 18
+            anchors.topMargin: 27
             contentWidth: width
             contentHeight: height
             clip: true
@@ -53,7 +53,7 @@ WindowBase {
             }
 
             GridView {
-                property int borderRadius: 8
+                property int borderRadius: 12
 
                 id: avataList
                 anchors.fill: parent
@@ -104,15 +104,15 @@ WindowBase {
         // 确认按钮
         ButtonBase {
             id: confirmBtn
-            width: 116
-            height: 48
+            width: 138
+            height: 72
             text: "Confirm"
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 36
+            anchors.bottomMargin: 54
             borderColor: "#24F5F5F7"
-            borderWidth: 1
-            borderRadius: 10
+            borderWidth: 2
+            borderRadius: 15
             bgNormalColor: "#7861FA"
 
             onClicked: {
@@ -128,17 +128,17 @@ WindowBase {
 
         // 取消按钮
         ButtonBase {
-            width: 116
-            height: 48
+            width: 126
+            height: 72
             text: "Cancel"
             anchors.right: confirmBtn.left
-            anchors.rightMargin: 24
+            anchors.rightMargin: 36
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 36
+            anchors.bottomMargin: 54
             borderColor: "#24F5F5F7"
-            borderWidth: 1
-            normalBorderWidth: 1
-            borderRadius: 10
+            borderWidth: 2
+            normalBorderWidth: 2
+            borderRadius: 15
 
             onClicked: {
                 chooseAvatarWindow.close()

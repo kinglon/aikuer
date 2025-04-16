@@ -10,7 +10,7 @@ Window {
     height: Math.min(7, listView.count) * contentItemHeight
     visible: false
 
-    property int contentItemHeight: 41
+    property int contentItemHeight: 61
 
     property var comboBox: null
 
@@ -18,13 +18,13 @@ Window {
         anchors.fill: parent
         color: "#1A1A1F"
         border.color: "#24F5F5F7"
-        border.width: 1
-        radius: 12
+        border.width: 2
+        radius: 18
 
         ListView {
             id: listView
-            width: parent.width - 12
-            height: parent.height - 12
+            width: parent.width - 18
+            height: parent.height - 18
             anchors.centerIn: parent
             model: comboBox.model
 
@@ -33,16 +33,16 @@ Window {
                 width: listView.width
                 height: popup.contentItemHeight
                 color: (mouseArea.containsMouse||isCurrent)? "#27272E" : "transparent"
-                radius: 8
+                radius: 12
                 border.width: (mouseArea.containsMouse||isCurrent)? 1 : 0
                 border.color: color
 
                 Image {
                     id: flagImageId
-                    width: 16
-                    height: 12
+                    width: 24
+                    height: 18
                     anchors.left: parent.left
-                    anchors.leftMargin: 14
+                    anchors.leftMargin: 21
                     anchors.verticalCenter: parent.verticalCenter
                     source: flagImagePath
                     fillMode: Image.PreserveAspectFit
@@ -50,11 +50,11 @@ Window {
 
                 Text {
                     anchors.left: flagImageId.right
-                    anchors.leftMargin: 3
+                    anchors.leftMargin: 5
                     anchors.verticalCenter: parent.verticalCenter
                     text: language
                     color: (mouseArea.containsMouse||isCurrent)?"#F5F5F7":"#8CEBEBED"
-                    font.pixelSize: 14
+                    font.pixelSize: 21
                     font.weight: Font.Medium
                 }
 
