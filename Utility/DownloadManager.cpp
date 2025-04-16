@@ -1,6 +1,7 @@
 ﻿#include "DownloadManager.h"
 #include <wininet.h>
 #include <thread>
+#include <QUrl>
 #include "LogMacro.h"
 
 #pragma comment(lib, "Urlmon.lib")
@@ -71,8 +72,9 @@ void CDownloadManager::ThreadProc()
 
 		CBindStatusCallback bindStatusCallback;
 		bindStatusCallback.m_callback = taskItem.m_callback;
-		bindStatusCallback.m_taskId = taskItem.m_taskId;
-		LRESULT lr = URLDownloadToFile(nullptr, taskItem.m_url.c_str(), taskItem.m_savedFilePath.c_str(), 
+        bindStatusCallback.m_taskId = taskItem.m_taskId;
+        QString encodedUrl = QUrl(QString::fromStdWString(taskItem.m_url)).toString(QUrl::FullyEncoded);
+        LRESULT lr = URLDownloadToFile(nullptr, encodedUrl.toStdWString().c_str(), taskItem.m_savedFilePath.c_str(),
 			0, &bindStatusCallback);
 		if (lr != S_OK)
 		{
