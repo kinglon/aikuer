@@ -119,12 +119,22 @@ WindowBase {
         }
 
         // 中间视频区域
-        Item {
+        Rectangle {
             id: item1
             Layout.fillWidth: true
             Layout.fillHeight: true
+            color: "#1A1A1F"
+            clip: true
 
-            // 中间图片
+            // 底图
+            Image {
+                width: 1251
+                height: 704
+                anchors.centerIn: parent
+                source: "qrc:/content/res/middle_background.png"
+            }
+
+            // 中间视频播放的内容
             Image {
                 id: videoPlayer
                 anchors.fill: parent

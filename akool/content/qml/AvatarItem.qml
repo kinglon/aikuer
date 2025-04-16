@@ -56,7 +56,7 @@ Item {
     Rectangle {
         id: coverArea
         anchors.fill: parent
-        border.width: 1
+        border.width: 2
         border.color: getBorderColor()
         radius: borderRadius
         color: "transparent"

@@ -15,31 +15,29 @@ Rectangle {
     color: "#312A5B"
 
     Image {
-        width: 22
-        height: 22
+        width: 48
+        height: 48
         source: "../res/icon1.png"
         fillMode: Image.PreserveAspectFit
-        anchors.top: parent.top
-        anchors.topMargin: 28
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.centerIn: parent
     }
 
     Text {
         text: "New Avatar"
         color: "#F5F5F7"
         font.weight: Font.Medium
-        font.pixelSize: 12
+        font.pixelSize: 18
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignBottom
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 26
+        anchors.bottomMargin: 6
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
     Rectangle {
         id: coverArea
         anchors.fill: parent
-        border.width: 1
+        border.width: 2
         border.color: isFocus? "#7861FA":"#1AF5F5F7"
         radius: borderRadius
         color: "transparent"

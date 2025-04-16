@@ -31,13 +31,14 @@ QImage MemoryImageProvider::requestImage(const QString &id, QSize *size, const Q
 
             if (retImage == nullptr)
             {
-                // 默认等待播放图片
-                static QImage waitingImage;
-                if (waitingImage.isNull())
+                // 默认使用完全透明的图片
+                static QImage transparentImg;
+                if (transparentImg.isNull())
                 {
-                    waitingImage.load(":/content/res/waiting_play.png");
+                    transparentImg = QImage(20, 20, QImage::Format_ARGB32);
+                    transparentImg.fill(Qt::transparent);
                 }
-                retImage = &waitingImage;
+                retImage = &transparentImg;
             }
         }
     }

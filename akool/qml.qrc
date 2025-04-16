@@ -9,7 +9,6 @@
         <file>content/res/avatar_demo.png</file>
         <file>content/res/icon1.png</file>
         <file>content/res/logo.png</file>
-        <file>content/res/waiting_play.png</file>
         <file>content/qml/MainControllerQml.qml</file>
         <file>content/res/close_button.png</file>
         <file>content/res/icon_success.png</file>
@@ -33,8 +32,9 @@
         <file>content/res/no_camera_bg.png</file>
         <file>content/qml/LanguagePopup.qml</file>
         <file>content/res/icon_voicecollect.png</file>
+        <file>content/res/middle_background.png</file>
     </qresource>
     <qresource prefix="/qml"/>
     <qresource prefix="/res"/>
-    <qresource lang="cn" prefix="/qml"/>
+    <qresource prefix="/qml" lang="cn"/>
 </RCC>
