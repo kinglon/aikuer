@@ -9,7 +9,7 @@ Window {
     visible: true
     width: 800
     height: 600
-    title: "Akool Cam"
+    title: "Akool Camera"
 
     // 是否有自定义标题栏，不使用系统默认
     property bool useSystemTitleBar: true

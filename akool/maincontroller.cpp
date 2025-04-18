@@ -61,13 +61,6 @@ void MainController::run()
     m_ipcWorker.setKey(IPC_KEY);
     connect(&m_ipcWorker, &IpcWorker::ipcDataArrive, this, &MainController::onIpcDataArrive);
     m_ipcWorker.start();
-
-    if (!StatusManager::getInstance()->m_avatarId.isEmpty())
-    {
-        // 启动的时候，已经选择avatar，就开始聊天
-        m_meetingController.beginChat();
-        emit chattingStatusChange(true);
-    }
 }
 
 QString MainController::avatarListToJsonString(const QVector<Avatar>& avatars)
