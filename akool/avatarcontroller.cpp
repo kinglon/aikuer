@@ -93,7 +93,7 @@ void AvatarController::getAvatarListFromServer()
     qInfo("get avatar list from server");
 
     QNetworkRequest request;
-    QUrl url(SettingManager::getInstance()->m_host + "/api/v6/content/avatar/list?from[]=2&from[]=3&from[]=4&size=100&type=2");
+    QUrl url(SettingManager::getInstance()->m_host + "/api/v6/content/avatar/list?from[]=2&from[]=3&from[]=4&size=100&type=4");
     request.setUrl(url);
     addCommonHeader(request);
 
