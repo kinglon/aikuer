@@ -33,6 +33,9 @@ public:
     QString m_avatarId;
     QString m_avatarIdForService;
 
+    // RTT使用的默认avatar
+    QString m_rttAvatarId = "live-translate-placeholder";
+
     // 会议结束时间, GetTickCount64时间戳，单位秒
     qint64 m_meetingEndTime = 0;
 };

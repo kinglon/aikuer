@@ -125,7 +125,7 @@ void MeetingController::createSession()
     }
     else if (StatusManager::getInstance()->m_currentMeetingMode == MEETING_MODE_RTT)
     {
-        bodyJson["avatar_id"] = "JericTest";
+        bodyJson["avatar_id"] = StatusManager::getInstance()->m_rttAvatarId;
         bodyJson["scene_mode"] = "translate";
         bodyJson["voice_id"] = "";
         bodyJson["source_lang"] = SettingManager::getInstance()->m_sourceLanguageCode;

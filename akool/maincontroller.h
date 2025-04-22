@@ -4,6 +4,7 @@
 #include <QObject>
 #include <qqml.h>
 #include "avatarcontroller.h"
+#include "rttavatarcontroller.h"
 #include "meetingcontroller.h"
 #include "translatelanguagecontroller.h"
 #include "myvideoplayer.h"
@@ -74,6 +75,7 @@ private:
 
 private:
     AvatarController m_avatarController;
+    RttAvatarController m_rttAvatarController;
 
     TranslateLanguageController m_tlController;
 

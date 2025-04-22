@@ -52,6 +52,7 @@ void MainController::run()
         emit hasNewAvatar(jsonString);
     });
     m_avatarController.run();
+    m_rttAvatarController.run();
 
     connect(&m_meetingController, &MeetingController::hasError, this, &MainController::showMessage);
     m_meetingController.run();

@@ -23,6 +23,7 @@ SOURCES += \
         meetingcontroller.cpp \
         memoryimageprovider.cpp \
         myvideoplayer.cpp \
+        rttavatarcontroller.cpp \
         settingmanager.cpp \
         statusmanager.cpp \
         translatelanguagecontroller.cpp \
@@ -68,6 +69,7 @@ HEADERS += \
     meetingcontroller.h \
     memoryimageprovider.h \
     myvideoplayer.h \
+    rttavatarcontroller.h \
     settingmanager.h \
     statusmanager.h \
     translatelanguagecontroller.h \
