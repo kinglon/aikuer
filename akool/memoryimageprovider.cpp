@@ -31,11 +31,11 @@ QImage MemoryImageProvider::requestImage(const QString &id, QSize *size, const Q
 
             if (retImage == nullptr)
             {
-                // 默认使用完全透明的图片
+                // 默认1x1透明图片，QML判断该图片就把黑色背景隐藏
                 static QImage transparentImg;
                 if (transparentImg.isNull())
                 {
-                    transparentImg = QImage(20, 20, QImage::Format_ARGB32);
+                    transparentImg = QImage(1, 1, QImage::Format_ARGB32);
                     transparentImg.fill(Qt::transparent);
                 }
                 retImage = &transparentImg;

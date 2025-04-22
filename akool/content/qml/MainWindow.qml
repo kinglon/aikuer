@@ -134,12 +134,29 @@ WindowBase {
                 source: "qrc:/content/res/middle_background.png"
             }
 
+            // 中间视频播放的内容黑色填充
+            Rectangle {
+                id: videoPlayerFillArea
+                anchors.fill: parent
+                color: "#1A1A1F"
+            }
+
             // 中间视频播放的内容
             Image {
                 id: videoPlayer
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
+                fillMode: Image.PreserveAspectFit
                 cache: false
+
+                onStatusChanged: {
+                    if (status === Image.Ready) {
+                        if (sourceSize.width == 1 && sourceSize.height == 1) {
+                            videoPlayerFillArea.visible = false
+                        } else {
+                            videoPlayerFillArea.visible = true
+                        }
+                    }
+                }
 
                 Timer {
                     id: videoPlayerTimer
@@ -460,7 +477,7 @@ WindowBase {
                         spacing: 9
 
                         onClicked: {
-                            Qt.openUrlExternally("https://akool.com/apps/akool-camera/voice-collection")
+                            Qt.openUrlExternally("https://akool.com/apps/real-time-translation")
                         }
                     }
 
